@@ -50,6 +50,10 @@
     <button id="rightButton" class="control-button">→</button>
   </div>
 
-  <script src="game.js?v=12345"></script>
+  <script>
+    const script = document.createElement('script');
+    script.src = 'game.js?v=' + Math.random();
+    document.body.appendChild(script);
+  </script>
 </body>
 </html>
