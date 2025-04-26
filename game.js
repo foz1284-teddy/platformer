@@ -8,10 +8,10 @@ const player = {
   width: 30,
   height: 30,
   color: 'blue',
-  speed: 5,
+  speed: 2,
   velocityY: 0,
-  jumpForce: -15, // stronger jump
-  gravity: 0.6,   // slightly stronger gravity
+  jumpForce: -13, // stronger jump
+  gravity: 0.4,   // slightly stronger gravity
   grounded: true
 };
 
