@@ -15,6 +15,39 @@ const player = {
   grounded: true
 };
 
+// Add tablet controls
+const leftButton = document.getElementById('leftButton');
+const rightButton = document.getElementById('rightButton');
+const jumpButton = document.getElementById('jumpButton');
+
+// Tablet controls
+leftButton.addEventListener('touchstart', () => keys['ArrowLeft'] = true);
+leftButton.addEventListener('touchend', () => keys['ArrowLeft'] = false);
+
+rightButton.addEventListener('touchstart', () => keys['ArrowRight'] = true);
+rightButton.addEventListener('touchend', () => keys['ArrowRight'] = false);
+
+jumpButton.addEventListener('touchstart', () => {
+  if (player.grounded) {
+    keys['ArrowUp'] = true;
+    setTimeout(() => keys['ArrowUp'] = false, 100); // Simulate quick press
+  }
+});
+
+// Mouse controls
+leftButton.addEventListener('mousedown', () => keys['ArrowLeft'] = true);
+leftButton.addEventListener('mouseup', () => keys['ArrowLeft'] = false);
+
+rightButton.addEventListener('mousedown', () => keys['ArrowRight'] = true);
+rightButton.addEventListener('mouseup', () => keys['ArrowRight'] = false);
+
+jumpButton.addEventListener('mousedown', () => {
+  if (player.grounded) {
+    keys['ArrowUp'] = true;
+    setTimeout(() => keys['ArrowUp'] = false, 100); // Simulate quick press
+  }
+});
+
 // Portal
 const portal = {
   x: 750,

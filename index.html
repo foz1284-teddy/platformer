@@ -15,10 +15,40 @@
       margin: 0 auto;
       border: 2px solid black;
     }
+    .controls {
+      position: fixed;
+      bottom: 20px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+    .control-button {
+      width: 60px;
+      height: 60px;
+      background-color: #444;
+      color: white;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      text-align: center;
+      line-height: 60px;
+      user-select: none;
+    }
+    .control-button:active {
+      background-color: #666;
+    }
   </style>
 </head>
 <body>
   <canvas id="gameCanvas" width="800" height="400"></canvas>
+
+  <!-- Tablet Controls -->
+  <div class="controls">
+    <button id="leftButton" class="control-button">←</button>
+    <button id="jumpButton" class="control-button">↑</button>
+    <button id="rightButton" class="control-button">→</button>
+  </div>
 
   <script src="game.js"></script>
 </body>
