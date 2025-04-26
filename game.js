@@ -10,14 +10,14 @@ const player = {
   color: 'blue',
   speed: 5,
   velocityY: 0,
-  jumpForce: -12,
-  gravity: 0.5,
+  jumpForce: -15, // stronger jump
+  gravity: 0.6,   // slightly stronger gravity
   grounded: true
 };
 
 // Portal
 const portal = {
-  x: 700,
+  x: 750,
   y: 350,
   width: 30,
   height: 30,
@@ -26,27 +26,38 @@ const portal = {
 
 // Spikes
 const spikes = [
-  { x: 300, y: 360, width: 20, height: 20 },
-  { x: 500, y: 360, width: 20, height: 20 }
+  { x: 400, y: 360, width: 20, height: 20 },
+  { x: 600, y: 360, width: 20, height: 20 }
 ];
 
+let keys = {};
 let gameWon = false;
 let gameLost = false;
 
 // Listen for keyboard input
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'ArrowRight') {
-    player.x += player.speed;
-  }
-  if (e.key === 'ArrowUp' && player.grounded) {
-    player.velocityY = player.jumpForce;
-    player.grounded = false;
-  }
+  keys[e.key] = true;
+});
+
+document.addEventListener('keyup', (e) => {
+  keys[e.key] = false;
 });
 
 // Game loop
 function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Movement
+  if (keys['ArrowRight']) {
+    player.x += player.speed;
+  }
+  if (keys['ArrowLeft']) {
+    player.x -= player.speed;
+  }
+  if (keys['ArrowUp'] && player.grounded) {
+    player.velocityY = player.jumpForce;
+    player.grounded = false;
+  }
 
   // Apply gravity
   player.velocityY += player.gravity;
