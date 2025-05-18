@@ -10,97 +10,89 @@ const player = {
   color: 'blue',
   speed: 2,
   velocityY: 0,
-  jumpForce: -13, // stronger jump
-  gravity: 0.4,   // slightly stronger gravity
+  jumpForce: -15,
+  gravity: 0.4,
   grounded: true
 };
 
-// Add tablet controls
-const leftButton = document.getElementById('leftButton');
-const rightButton = document.getElementById('rightButton');
-const jumpButton = document.getElementById('jumpButton');
-
-// Tablet controls
-leftButton.addEventListener('touchstart', () => keys['ArrowLeft'] = true);
-leftButton.addEventListener('touchend', () => keys['ArrowLeft'] = false);
-
-rightButton.addEventListener('touchstart', () => keys['ArrowRight'] = true);
-rightButton.addEventListener('touchend', () => keys['ArrowRight'] = false);
-
-jumpButton.addEventListener('touchstart', () => {
-  if (player.grounded) {
-    keys['ArrowUp'] = true;
-    setTimeout(() => keys['ArrowUp'] = false, 100); // Simulate quick press
-  }
-});
-
-// Mouse controls
-leftButton.addEventListener('mousedown', () => keys['ArrowLeft'] = true);
-leftButton.addEventListener('mouseup', () => keys['ArrowLeft'] = false);
-
-rightButton.addEventListener('mousedown', () => keys['ArrowRight'] = true);
-rightButton.addEventListener('mouseup', () => keys['ArrowRight'] = false);
-
-jumpButton.addEventListener('mousedown', () => {
-  if (player.grounded) {
-    keys['ArrowUp'] = true;
-    setTimeout(() => keys['ArrowUp'] = false, 100); // Simulate quick press
-  }
-});
-
-// Portal
-const portal = {
-  x: 750,
-  y: 350,
-  width: 30,
-  height: 30,
-  color: 'purple'
-};
-
-// Spikes
-const spikes = [
-  { x: 400, y: 360, width: 20, height: 20 },
-  { x: 600, y: 360, width: 20, height: 20 }
+// Define levels
+const levels = [
+  {
+    portal: { x: 750, y: 350 },
+    spikes: [
+      { x: 400, y: 360, width: 20, height: 20 },
+      { x: 600, y: 360, width: 20, height: 20 }
+    ]
+  },
+  {
+    portal: { x: 700, y: 350 },
+    spikes: [
+      { x: 300, y: 360, width: 20, height: 20 },
+      { x: 500, y: 360, width: 20, height: 20 },
+      { x: 650, y: 360, width: 20, height: 20 }
+    ]
+  },
+  // You can add more levels here!
 ];
 
+let currentLevel = 0;
 let keys = {};
 let gameWon = false;
 let gameLost = false;
 
-// Listen for keyboard input
+function resetPlayer() {
+  player.x = 50;
+  player.y = 350;
+  player.velocityY = 0;
+  player.grounded = true;
+}
+
 document.addEventListener('keydown', (e) => {
   keys[e.key] = true;
+  if ((gameWon || gameLost) && e.key === 'Enter') {
+    if (gameWon) {
+      currentLevel++;
+      if (currentLevel >= levels.length) {
+        currentLevel = 0; // Loop back to first level
+      }
+    }
+    resetPlayer();
+    gameWon = false;
+    gameLost = false;
+    requestAnimationFrame(gameLoop); // <-- this is the fix
+  }
 });
 
 document.addEventListener('keyup', (e) => {
   keys[e.key] = false;
 });
 
-// Game loop
 function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Movement
-  if (keys['ArrowRight']) {
-    player.x += player.speed;
-  }
-  if (keys['ArrowLeft']) {
-    player.x -= player.speed;
-  }
-  if (keys['ArrowUp'] && player.grounded) {
-    player.velocityY = player.jumpForce;
-    player.grounded = false;
-  }
+  if (!gameWon && !gameLost) {
+    // Movement
+    if (keys['ArrowRight']) {
+      player.x += player.speed;
+    }
+    if (keys['ArrowLeft']) {
+      player.x -= player.speed;
+    }
+    if (keys['ArrowUp'] && player.grounded) {
+      player.velocityY = player.jumpForce;
+      player.grounded = false;
+    }
 
-  // Apply gravity
-  player.velocityY += player.gravity;
-  player.y += player.velocityY;
+    // Apply gravity
+    player.velocityY += player.gravity;
+    player.y += player.velocityY;
 
-  // Ground collision
-  if (player.y + player.height >= 380) {
-    player.y = 380 - player.height;
-    player.velocityY = 0;
-    player.grounded = true;
+    // Ground collision
+    if (player.y + player.height >= 380) {
+      player.y = 380 - player.height;
+      player.velocityY = 0;
+      player.grounded = true;
+    }
   }
 
   // Draw ground
@@ -111,9 +103,13 @@ function gameLoop() {
   ctx.fillStyle = player.color;
   ctx.fillRect(player.x, player.y, player.width, player.height);
 
+  // Get current level info
+  const portal = levels[currentLevel].portal;
+  const spikes = levels[currentLevel].spikes;
+
   // Draw portal
-  ctx.fillStyle = portal.color;
-  ctx.fillRect(portal.x, portal.y, portal.width, portal.height);
+  ctx.fillStyle = 'purple';
+  ctx.fillRect(portal.x, portal.y, 30, 30);
 
   // Draw spikes
   ctx.fillStyle = 'red';
@@ -126,7 +122,7 @@ function gameLoop() {
     ctx.fill();
   });
 
-  // Check collision with spikes
+  // Check collisions with spikes
   spikes.forEach(spike => {
     if (player.x < spike.x + spike.width &&
         player.x + player.width > spike.x &&
@@ -137,22 +133,24 @@ function gameLoop() {
   });
 
   // Check win condition
-  if (player.x + player.width >= portal.x) {
+  if (player.x + player.width >= portal.x &&
+      player.x <= portal.x + 30 &&
+      player.y + player.height >= portal.y &&
+      player.y <= portal.y + 30) {
     gameWon = true;
   }
 
   if (gameWon) {
     ctx.fillStyle = 'black';
-    ctx.font = '48px sans-serif';
-    ctx.fillText('YOU WIN!', 300, 200);
+    ctx.font = '36px sans-serif';
+    ctx.fillText('Level Complete! Press Enter.', 150, 200);
   } else if (gameLost) {
     ctx.fillStyle = 'black';
-    ctx.font = '48px sans-serif';
-    ctx.fillText('YOU LOSE!', 300, 200);
+    ctx.font = '36px sans-serif';
+    ctx.fillText('You Lost! Press Enter to Retry.', 120, 200);
   } else {
     requestAnimationFrame(gameLoop);
   }
 }
 
-// Start the game
 gameLoop();
