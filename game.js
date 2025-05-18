@@ -1,5 +1,8 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+let cameraX = 0;
+
+
 
 // Player
 const player = {
@@ -15,24 +18,15 @@ const player = {
   grounded: true
 };
 
-// Define levels
 const levels = [
   {
-    portal: { x: 750, y: 350 },
+    portal: { x: 1600, y: 350 },
     spikes: [
       { x: 400, y: 360, width: 20, height: 20 },
-      { x: 600, y: 360, width: 20, height: 20 }
+      { x: 800, y: 360, width: 20, height: 20 },
+      { x: 1200, y: 360, width: 20, height: 20 }
     ]
-  },
-  {
-    portal: { x: 700, y: 350 },
-    spikes: [
-      { x: 300, y: 360, width: 20, height: 20 },
-      { x: 500, y: 360, width: 20, height: 20 },
-      { x: 650, y: 360, width: 20, height: 20 }
-    ]
-  },
-  // You can add more levels here!
+  }
 ];
 
 let currentLevel = 0;
@@ -69,7 +63,9 @@ document.addEventListener('keyup', (e) => {
 
 function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+  cameraX = player.x - canvas.width / 2;
+  if (cameraX < 0) cameraX = 0;
+  
   if (!gameWon && !gameLost) {
     // Movement
     if (keys['ArrowRight']) {
@@ -93,34 +89,37 @@ function gameLoop() {
       player.velocityY = 0;
       player.grounded = true;
     }
+
+    if (player.x < 0) player.x = 0;
   }
-
-  // Draw ground
-  ctx.fillStyle = '#654321';
-  ctx.fillRect(0, 380, canvas.width, 20);
-
-  // Draw player
-  ctx.fillStyle = player.color;
-  ctx.fillRect(player.x, player.y, player.width, player.height);
 
   // Get current level info
   const portal = levels[currentLevel].portal;
   const spikes = levels[currentLevel].spikes;
 
-  // Draw portal
-  ctx.fillStyle = 'purple';
-  ctx.fillRect(portal.x, portal.y, 30, 30);
+// Draw ground
+ctx.fillStyle = '#654321';
+ctx.fillRect(-cameraX, 380, 2000, 20); // Wider than screen
 
-  // Draw spikes
-  ctx.fillStyle = 'red';
-  spikes.forEach(spike => {
-    ctx.beginPath();
-    ctx.moveTo(spike.x, spike.y + spike.height);
-    ctx.lineTo(spike.x + spike.width / 2, spike.y);
-    ctx.lineTo(spike.x + spike.width, spike.y + spike.height);
-    ctx.closePath();
-    ctx.fill();
-  });
+// Draw player
+ctx.fillStyle = player.color;
+ctx.fillRect(player.x - cameraX, player.y, player.width, player.height);
+
+// Draw portal
+ctx.fillStyle = 'purple';
+ctx.fillRect(portal.x - cameraX, portal.y, 30, 30);
+
+// Draw spikes
+ctx.fillStyle = 'red';
+spikes.forEach(spike => {
+  ctx.beginPath();
+  ctx.moveTo(spike.x - cameraX, spike.y + spike.height);
+  ctx.lineTo(spike.x - cameraX + spike.width / 2, spike.y);
+  ctx.lineTo(spike.x - cameraX + spike.width, spike.y + spike.height);
+  ctx.closePath();
+  ctx.fill();
+});
+
 
   // Check collisions with spikes
   spikes.forEach(spike => {
