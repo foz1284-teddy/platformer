@@ -2,7 +2,35 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 let cameraX = 0;
 
+// Sprite loading
+const sprites = {
+  player: new Image(),
+  spike: new Image(),
+  portal: new Image(),
+  ground: new Image()
+};
 
+let spritesLoaded = 0;
+const totalSprites = Object.keys(sprites).length;
+
+function checkAllSpritesLoaded() {
+  spritesLoaded++;
+  if (spritesLoaded === totalSprites) {
+    // All sprites loaded, start the game
+    gameLoop();
+  }
+}
+
+// Load sprites
+sprites.player.onload = checkAllSpritesLoaded;
+sprites.spike.onload = checkAllSpritesLoaded;
+sprites.portal.onload = checkAllSpritesLoaded;
+sprites.ground.onload = checkAllSpritesLoaded;
+
+sprites.player.src = 'sprites/player.svg';
+sprites.spike.src = 'sprites/spike.svg';
+sprites.portal.src = 'sprites/portal.svg';
+sprites.ground.src = 'sprites/ground.svg';
 
 // Player
 const player = {
@@ -15,7 +43,8 @@ const player = {
   velocityY: 0,
   jumpForce: -15,
   gravity: 0.4,
-  grounded: true
+  grounded: true,
+  facingRight: true
 };
 
 const levels = [
@@ -79,9 +108,11 @@ function gameLoop() {
     // Movement
     if (keys['ArrowRight']) {
       player.x += player.speed;
+      player.facingRight = true;
     }
     if (keys['ArrowLeft']) {
       player.x -= player.speed;
+      player.facingRight = false;
     }
     if (keys['ArrowUp'] && player.grounded) {
       player.velocityY = player.jumpForce;
@@ -106,29 +137,27 @@ function gameLoop() {
   const portal = levels[currentLevel].portal;
   const spikes = levels[currentLevel].spikes;
 
-// Draw ground
-ctx.fillStyle = '#654321';
-ctx.fillRect(-cameraX, 380, 2000, 20); // Wider than screen
+  // Draw ground
+  ctx.drawImage(sprites.ground, -cameraX, 380, 2000, 20);
 
-// Draw player
-ctx.fillStyle = player.color;
-ctx.fillRect(player.x - cameraX, player.y, player.width, player.height);
+  // Draw player
+  ctx.save();
+  if (!player.facingRight) {
+    ctx.translate(player.x - cameraX + player.width, player.y);
+    ctx.scale(-1, 1);
+    ctx.drawImage(sprites.player, 0, 0, player.width, player.height);
+  } else {
+    ctx.drawImage(sprites.player, player.x - cameraX, player.y, player.width, player.height);
+  }
+  ctx.restore();
 
-// Draw portal
-ctx.fillStyle = 'purple';
-ctx.fillRect(portal.x - cameraX, portal.y, 30, 30);
+  // Draw portal
+  ctx.drawImage(sprites.portal, portal.x - cameraX, portal.y, 30, 30);
 
-// Draw spikes
-ctx.fillStyle = 'red';
-spikes.forEach(spike => {
-  ctx.beginPath();
-  ctx.moveTo(spike.x - cameraX, spike.y + spike.height);
-  ctx.lineTo(spike.x - cameraX + spike.width / 2, spike.y);
-  ctx.lineTo(spike.x - cameraX + spike.width, spike.y + spike.height);
-  ctx.closePath();
-  ctx.fill();
-});
-
+  // Draw spikes
+  spikes.forEach(spike => {
+    ctx.drawImage(sprites.spike, spike.x - cameraX, spike.y, spike.width, spike.height);
+  });
 
   // Check collisions with spikes
   spikes.forEach(spike => {
@@ -160,5 +189,3 @@ spikes.forEach(spike => {
     requestAnimationFrame(gameLoop);
   }
 }
-
-gameLoop();
