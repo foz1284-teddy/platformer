@@ -38,7 +38,8 @@
 - [ ] Level completion animations
 
 ## Audio
-- [ ] Background music
+- [x ] Background music
+- [ ] Make the Audio Better - use MP3s as described in the audio folder readme file
 - [ ] Sound effects for:
   - [ ] Jumping
   - [ ] Landing
