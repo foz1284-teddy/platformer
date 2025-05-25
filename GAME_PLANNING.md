@@ -56,7 +56,7 @@
 - [ ] Tutorial system
 - [x] Score/time tracking
 - [ ] Lives system
-- [ ] High score table
+- [x ] High score table
 
 ## Technical Improvements
 - [ ] Save/load system

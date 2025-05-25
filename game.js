@@ -122,6 +122,26 @@ const SCORE_VALUES = {
   SPIKE_HIT: -100
 };
 
+// High score system
+const highScores = {
+  scores: JSON.parse(localStorage.getItem('highScores')) || [],
+  maxEntries: 10,
+  
+  addScore(score, level) {
+    const date = new Date().toLocaleDateString();
+    this.scores.push({ score, level, date });
+    this.scores.sort((a, b) => b.score - a.score);
+    if (this.scores.length > this.maxEntries) {
+      this.scores = this.scores.slice(0, this.maxEntries);
+    }
+    localStorage.setItem('highScores', JSON.stringify(this.scores));
+  },
+  
+  getTopScores() {
+    return this.scores.slice(0, this.maxEntries);
+  }
+};
+
 // Update score display
 function drawScore() {
   ctx.fillStyle = 'black';
@@ -179,10 +199,49 @@ function resetPlayer() {
   player.grounded = true;
 }
 
+// Draw high score table
+function drawHighScoreTable() {
+  const scores = highScores.getTopScores();
+  const startX = canvas.width / 2 - 200;
+  const startY = 100;
+  const rowHeight = 30;
+  
+  // Draw table background
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+  ctx.fillRect(startX - 10, startY - 40, 420, (scores.length + 1) * rowHeight + 50);
+  
+  // Draw table header
+  ctx.fillStyle = 'black';
+  ctx.font = 'bold 24px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('High Scores', canvas.width / 2, startY);
+  
+  // Draw column headers
+  ctx.font = 'bold 18px Arial';
+  ctx.fillText('Rank', startX + 30, startY + 30);
+  ctx.fillText('Score', startX + 120, startY + 30);
+  ctx.fillText('Level', startX + 220, startY + 30);
+  ctx.fillText('Date', startX + 320, startY + 30);
+  
+  // Draw scores
+  ctx.font = '16px Arial';
+  scores.forEach((entry, index) => {
+    const y = startY + 60 + (index * rowHeight);
+    ctx.textAlign = 'center';
+    ctx.fillText(`${index + 1}`, startX + 30, y);
+    ctx.fillText(`${Math.floor(entry.score)}`, startX + 120, y);
+    ctx.fillText(`Level ${entry.level + 1}`, startX + 220, y);
+    ctx.fillText(entry.date, startX + 320, y);
+  });
+}
+
 document.addEventListener('keydown', (e) => {
   keys[e.key] = true;
   if (e.key === 'm' || e.key === 'M') {
     toggleMute();
+  }
+  if (e.key === 'h' || e.key === 'H') {
+    toggleHighScores();
   }
   if ((gameWon || gameLost) && e.key === 'Enter') {
     if (gameWon) {
@@ -306,12 +365,21 @@ function gameLoop() {
     ctx.font = '24px sans-serif';
     ctx.fillText(`Final Score: ${Math.floor(score.points)}`, 150, 240);
     ctx.fillText(`Max Combo: ${score.maxCombo}x`, 150, 280);
+    
+    // Add score to high scores
+    highScores.addScore(score.points, currentLevel);
+    
+    // Show high score table
+    drawHighScoreTable();
   } else if (gameLost) {
     ctx.fillStyle = 'black';
     ctx.font = '36px sans-serif';
     ctx.fillText('You Lost! Press Enter to Retry.', 120, 200);
     ctx.font = '24px sans-serif';
     ctx.fillText(`Score: ${Math.floor(score.points)}`, 150, 240);
+    
+    // Show high score table
+    drawHighScoreTable();
   } else {
     requestAnimationFrame(gameLoop);
   }
@@ -321,4 +389,56 @@ function gameLoop() {
 function startGame() {
   playBackgroundMusic();
   gameLoop();
+}
+
+// Add a function to show high scores during gameplay
+function toggleHighScores() {
+  const showScores = !document.getElementById('highScoresOverlay');
+  if (showScores) {
+    const overlay = document.createElement('div');
+    overlay.id = 'highScoresOverlay';
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    overlay.style.display = 'flex';
+    overlay.style.justifyContent = 'center';
+    overlay.style.alignItems = 'center';
+    overlay.style.zIndex = '1000';
+    
+    const table = document.createElement('div');
+    table.style.backgroundColor = 'white';
+    table.style.padding = '20px';
+    table.style.borderRadius = '10px';
+    table.style.maxWidth = '80%';
+    table.style.maxHeight = '80%';
+    table.style.overflow = 'auto';
+    
+    const scores = highScores.getTopScores();
+    let html = '<h2 style="text-align: center;">High Scores</h2>';
+    html += '<table style="width: 100%; border-collapse: collapse;">';
+    html += '<tr><th>Rank</th><th>Score</th><th>Level</th><th>Date</th></tr>';
+    
+    scores.forEach((entry, index) => {
+      html += `<tr>
+        <td style="padding: 8px; text-align: center;">${index + 1}</td>
+        <td style="padding: 8px; text-align: center;">${Math.floor(entry.score)}</td>
+        <td style="padding: 8px; text-align: center;">Level ${entry.level + 1}</td>
+        <td style="padding: 8px; text-align: center;">${entry.date}</td>
+      </tr>`;
+    });
+    
+    html += '</table>';
+    html += '<p style="text-align: center; margin-top: 20px;">Press H to close</p>';
+    table.innerHTML = html;
+    overlay.appendChild(table);
+    document.body.appendChild(overlay);
+  } else {
+    const overlay = document.getElementById('highScoresOverlay');
+    if (overlay) {
+      overlay.remove();
+    }
+  }
 }
