@@ -29,7 +29,7 @@
 - [ ] Bouncing platforms
 
 ## Visual Improvements
-- [ ] Sprite-based graphics instead of shapes
+- [x] Sprite-based graphics instead of shapes
 - [ ] Particle effects (jump dust, landing impact)
 - [ ] Background decorations
 - [ ] Screen shake effects

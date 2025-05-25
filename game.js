@@ -2,6 +2,37 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 let cameraX = 0;
 
+// Audio system
+const synth = new MidiSynth();
+let backgroundMusicInterval = null;
+synth.setVolume(0);
+
+// Audio controls
+function toggleMute() {
+  synth.setVolume(synth.gainNode.gain.value > 0 ? 0 : 0.3);
+}
+
+function playBackgroundMusic() {
+  if (backgroundMusicInterval) {
+    clearInterval(backgroundMusicInterval);
+  }
+  
+  const playMelody = () => {
+    synth.playSequence(gameMelodies.background, 1800); // Faster tempo for more upbeat feel
+  };
+  
+  playMelody();
+  backgroundMusicInterval = setInterval(playMelody, 6000); // Repeat every 6 seconds to match the new melody length
+}
+
+function stopBackgroundMusic() {
+  if (backgroundMusicInterval) {
+    clearInterval(backgroundMusicInterval);
+    backgroundMusicInterval = null;
+  }
+  synth.stopAll();
+}
+
 // Sprite loading
 const sprites = {
   player: new Image(),
@@ -16,8 +47,7 @@ const totalSprites = Object.keys(sprites).length;
 function checkAllSpritesLoaded() {
   spritesLoaded++;
   if (spritesLoaded === totalSprites) {
-    // All sprites loaded, start the game
-    gameLoop();
+    startGame();
   }
 }
 
@@ -81,6 +111,9 @@ function resetPlayer() {
 
 document.addEventListener('keydown', (e) => {
   keys[e.key] = true;
+  if (e.key === 'm' || e.key === 'M') {
+    toggleMute();
+  }
   if ((gameWon || gameLost) && e.key === 'Enter') {
     if (gameWon) {
       currentLevel++;
@@ -91,7 +124,8 @@ document.addEventListener('keydown', (e) => {
     resetPlayer();
     gameWon = false;
     gameLost = false;
-    requestAnimationFrame(gameLoop); // <-- this is the fix
+    playBackgroundMusic();
+    requestAnimationFrame(gameLoop);
   }
 });
 
@@ -117,6 +151,7 @@ function gameLoop() {
     if (keys['ArrowUp'] && player.grounded) {
       player.velocityY = player.jumpForce;
       player.grounded = false;
+      //synth.playSequence(gameMelodies.jump, 240);
     }
 
     // Apply gravity
@@ -174,7 +209,11 @@ function gameLoop() {
       player.x <= portal.x + 30 &&
       player.y + player.height >= portal.y &&
       player.y <= portal.y + 30) {
-    gameWon = true;
+    if (!gameWon) {
+      gameWon = true;
+      stopBackgroundMusic();
+      //synth.playSequence(gameMelodies.win, 120);
+    }
   }
 
   if (gameWon) {
@@ -185,7 +224,14 @@ function gameLoop() {
     ctx.fillStyle = 'black';
     ctx.font = '36px sans-serif';
     ctx.fillText('You Lost! Press Enter to Retry.', 120, 200);
+    //synth.playSequence(gameMelodies.lose, 120);
   } else {
     requestAnimationFrame(gameLoop);
   }
+}
+
+// Start game with music
+function startGame() {
+  playBackgroundMusic();
+  gameLoop();
 }
