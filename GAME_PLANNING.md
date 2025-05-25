@@ -54,7 +54,7 @@
 - [ ] Pause menu
 - [ ] Settings menu (sound, music, controls)
 - [ ] Tutorial system
-- [ ] Score/time tracking
+- [x] Score/time tracking
 - [ ] Lives system
 - [ ] High score table
 

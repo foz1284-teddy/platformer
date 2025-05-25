@@ -102,6 +102,76 @@ let keys = {};
 let gameWon = false;
 let gameLost = false;
 
+// Scoring system
+const score = {
+  points: 0,
+  highScore: localStorage.getItem('highScore') || 0,
+  jumpCount: 0,
+  distance: 0,
+  lastX: 50, // Starting X position
+  combo: 0,
+  maxCombo: 0
+};
+
+// Score multipliers and points
+const SCORE_VALUES = {
+  JUMP: 10,
+  DISTANCE: 1, // Points per pixel moved
+  COMBO_MULTIPLIER: 1.5,
+  LEVEL_COMPLETE: 1000,
+  SPIKE_HIT: -100
+};
+
+// Update score display
+function drawScore() {
+  ctx.fillStyle = 'black';
+  ctx.font = '20px Arial';
+  ctx.textAlign = 'left';
+  ctx.fillText(`Score: ${Math.floor(score.points)}`, 20, 30);
+  ctx.fillText(`High Score: ${Math.floor(score.highScore)}`, 20, 60);
+  ctx.fillText(`Combo: ${score.combo}x`, 20, 90);
+}
+
+// Update score
+function updateScore(type, value = 1) {
+  switch(type) {
+    case 'jump':
+      score.jumpCount++;
+      score.combo++;
+      score.points += SCORE_VALUES.JUMP * (1 + (score.combo * 0.1));
+      break;
+    case 'distance':
+      score.distance += value;
+      score.points += SCORE_VALUES.DISTANCE * value;
+      break;
+    case 'levelComplete':
+      score.points += SCORE_VALUES.LEVEL_COMPLETE * (1 + (score.combo * 0.1));
+      if (score.points > score.highScore) {
+        score.highScore = score.points;
+        localStorage.setItem('highScore', score.highScore);
+      }
+      break;
+    case 'spikeHit':
+      score.points += SCORE_VALUES.SPIKE_HIT;
+      score.combo = 0;
+      break;
+  }
+  
+  // Update max combo
+  if (score.combo > score.maxCombo) {
+    score.maxCombo = score.combo;
+  }
+}
+
+// Reset score for new level
+function resetScore() {
+  score.points = 0;
+  score.jumpCount = 0;
+  score.distance = 0;
+  score.lastX = 50;
+  score.combo = 0;
+}
+
 function resetPlayer() {
   player.x = 50;
   player.y = 350;
@@ -122,6 +192,7 @@ document.addEventListener('keydown', (e) => {
       }
     }
     resetPlayer();
+    resetScore();
     gameWon = false;
     gameLost = false;
     playBackgroundMusic();
@@ -143,6 +214,12 @@ function gameLoop() {
     if (keys['ArrowRight']) {
       player.x += player.speed;
       player.facingRight = true;
+      // Update distance score
+      const distance = player.x - score.lastX;
+      if (distance > 0) {
+        updateScore('distance', distance);
+        score.lastX = player.x;
+      }
     }
     if (keys['ArrowLeft']) {
       player.x -= player.speed;
@@ -151,7 +228,8 @@ function gameLoop() {
     if (keys['ArrowUp'] && player.grounded) {
       player.velocityY = player.jumpForce;
       player.grounded = false;
-      //synth.playSequence(gameMelodies.jump, 240);
+      updateScore('jump');
+      synth.playSequence(gameMelodies.jump, 240);
     }
 
     // Apply gravity
@@ -201,6 +279,7 @@ function gameLoop() {
         player.y < spike.y + spike.height &&
         player.y + player.height > spike.y) {
       gameLost = true;
+      updateScore('spikeHit');
     }
   });
 
@@ -212,19 +291,27 @@ function gameLoop() {
     if (!gameWon) {
       gameWon = true;
       stopBackgroundMusic();
-      //synth.playSequence(gameMelodies.win, 120);
+      updateScore('levelComplete');
+      synth.playSequence(gameMelodies.win, 120);
     }
   }
+
+  // Draw score
+  drawScore();
 
   if (gameWon) {
     ctx.fillStyle = 'black';
     ctx.font = '36px sans-serif';
     ctx.fillText('Level Complete! Press Enter.', 150, 200);
+    ctx.font = '24px sans-serif';
+    ctx.fillText(`Final Score: ${Math.floor(score.points)}`, 150, 240);
+    ctx.fillText(`Max Combo: ${score.maxCombo}x`, 150, 280);
   } else if (gameLost) {
     ctx.fillStyle = 'black';
     ctx.font = '36px sans-serif';
     ctx.fillText('You Lost! Press Enter to Retry.', 120, 200);
-    //synth.playSequence(gameMelodies.lose, 120);
+    ctx.font = '24px sans-serif';
+    ctx.fillText(`Score: ${Math.floor(score.points)}`, 150, 240);
   } else {
     requestAnimationFrame(gameLoop);
   }
