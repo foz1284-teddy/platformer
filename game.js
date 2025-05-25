@@ -22,9 +22,18 @@ const levels = [
   {
     portal: { x: 1600, y: 350 },
     spikes: [
-      { x: 400, y: 360, width: 20, height: 20 },
-      { x: 800, y: 360, width: 20, height: 20 },
-      { x: 1200, y: 360, width: 20, height: 20 }
+      { x: 400, y: 360, width: 20, height: 20, name:"spike1" },
+      { x: 800, y: 360, width: 20, height: 20, name:"spike2" },
+      { x: 1200, y: 360, width: 20, height: 20, name:"spike3" }
+    ]
+  },
+  {
+    portal: { x: 1970, y: 350 },
+    spikes: [
+      { x: 500, y: 340, width: 20, height: 40 },
+      { x: 900, y: 340, width: 20, height: 40 },
+      { x: 1300, y: 340, width: 20, height: 40 },
+      { x: 1700, y: 340, width: 20, height: 40 }
     ]
   }
 ];
