@@ -235,15 +235,11 @@ function drawHighScoreTable() {
   });
 }
 
-document.addEventListener('keydown', (e) => {
-  keys[e.key] = true;
-  if (e.key === 'm' || e.key === 'M') {
-    toggleMute();
-  }
-  if (e.key === 'h' || e.key === 'H') {
-    toggleHighScores();
-  }
-  if ((gameWon || gameLost) && e.key === 'Enter') {
+// Add restart button handling
+function setupRestartButton() {
+  const restartButton = document.getElementById('restartButton');
+  
+  restartButton.addEventListener('click', () => {
     if (gameWon) {
       currentLevel++;
       if (currentLevel >= levels.length) {
@@ -254,15 +250,13 @@ document.addEventListener('keydown', (e) => {
     resetScore();
     gameWon = false;
     gameLost = false;
+    restartButton.style.display = 'none';
     playBackgroundMusic();
     requestAnimationFrame(gameLoop);
-  }
-});
+  });
+}
 
-document.addEventListener('keyup', (e) => {
-  keys[e.key] = false;
-});
-
+// Update the game loop to show/hide restart button
 function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   cameraX = player.x - canvas.width / 2;
@@ -371,6 +365,10 @@ function gameLoop() {
     
     // Show high score table
     drawHighScoreTable();
+    
+    // Show restart button
+    document.getElementById('restartButton').style.display = 'block';
+    document.getElementById('restartButton').textContent = 'Next Level';
   } else if (gameLost) {
     ctx.fillStyle = 'black';
     ctx.font = '36px sans-serif';
@@ -380,6 +378,10 @@ function gameLoop() {
     
     // Show high score table
     drawHighScoreTable();
+    
+    // Show restart button
+    document.getElementById('restartButton').style.display = 'block';
+    document.getElementById('restartButton').textContent = 'Try Again';
   } else {
     requestAnimationFrame(gameLoop);
   }
@@ -432,6 +434,7 @@ function setupTouchControls() {
 // Call setupTouchControls when the game starts
 function startGame() {
   setupTouchControls();
+  setupRestartButton();
   playBackgroundMusic();
   gameLoop();
 }

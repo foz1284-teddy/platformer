@@ -49,6 +49,29 @@
       background-color: rgba(102, 102, 102, 0.8);
       transform: scale(0.95);
     }
+    #restartButton {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 200px;
+      height: 60px;
+      background-color: rgba(68, 68, 68, 0.9);
+      color: white;
+      font-size: 24px;
+      border: none;
+      border-radius: 30px;
+      text-align: center;
+      line-height: 60px;
+      display: none;
+      z-index: 1000;
+      touch-action: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #restartButton:active {
+      background-color: rgba(102, 102, 102, 0.9);
+      transform: translate(-50%, -50%) scale(0.95);
+    }
     @media (max-width: 768px) {
       .control-button {
         width: 70px;
@@ -56,11 +79,18 @@
         line-height: 70px;
         font-size: 20px;
       }
+      #restartButton {
+        width: 180px;
+        height: 50px;
+        line-height: 50px;
+        font-size: 20px;
+      }
     }
   </style>
 </head>
 <body>
   <canvas id="gameCanvas" width="800" height="400"></canvas>
+  <button id="restartButton">Restart Level</button>
 
   <!-- Tablet Controls -->
   <div class="controls">
