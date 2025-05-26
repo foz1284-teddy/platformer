@@ -3,26 +3,81 @@ const ctx = canvas.getContext('2d');
 let cameraX = 0;
 
 // Audio system
-const synth = new MidiSynth();
+const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+let backgroundMusic = new Audio('audio/background.mp3');
 let backgroundMusicInterval = null;
-synth.setVolume(0);
+let audioInitialized = false;
+
+// Add loading verification
+backgroundMusic.addEventListener('loadeddata', () => {
+  console.log('Background music loaded successfully');
+});
+
+backgroundMusic.addEventListener('error', (e) => {
+  console.error('Error loading background music:', e);
+});
 
 // Audio controls
+function initializeAudio() {
+  console.log('Initializing audio...');
+  if (!audioInitialized) {
+    try {
+      // Resume audio context
+      audioContext.resume();
+      
+      // Set volume and ensure it's not muted
+      backgroundMusic.volume = 0.2; // Reduced from 1.0 to 0.2 for quieter background
+      backgroundMusic.muted = false;
+      backgroundMusic.loop = true;
+      
+      // Log current audio state
+      console.log('Audio state:', {
+        volume: backgroundMusic.volume,
+        muted: backgroundMusic.muted,
+        paused: backgroundMusic.paused,
+        readyState: backgroundMusic.readyState
+      });
+      
+      audioInitialized = true;
+      console.log('Audio initialized successfully');
+      playBackgroundMusic();
+    } catch (error) {
+      console.error('Error initializing audio:', error);
+    }
+  }
+}
+
 function toggleMute() {
-  synth.setVolume(synth.gainNode.gain.value > 0 ? 0 : 0.3);
+  console.log('Toggling mute, audio initialized:', audioInitialized);
+  if (!audioInitialized) {
+    initializeAudio();
+  } else {
+    backgroundMusic.muted = !backgroundMusic.muted;
+    console.log('Audio muted:', backgroundMusic.muted);
+  }
 }
 
 function playBackgroundMusic() {
+  console.log('Attempting to play background music...');
   if (backgroundMusicInterval) {
     clearInterval(backgroundMusicInterval);
   }
   
-  const playMelody = () => {
-    synth.playSequence(gameMelodies.background, 1800); // Faster tempo for more upbeat feel
-  };
+  // Force reload the audio
+  backgroundMusic.load();
   
-  playMelody();
-  backgroundMusicInterval = setInterval(playMelody, 6000); // Repeat every 6 seconds to match the new melody length
+  backgroundMusic.play()
+    .then(() => {
+      console.log('Background music started successfully');
+      // Log audio state after successful play
+      console.log('Audio state after play:', {
+        volume: backgroundMusic.volume,
+        muted: backgroundMusic.muted,
+        paused: backgroundMusic.paused,
+        readyState: backgroundMusic.readyState
+      });
+    })
+    .catch(error => console.error('Background music failed to play:', error));
 }
 
 function stopBackgroundMusic() {
@@ -30,7 +85,8 @@ function stopBackgroundMusic() {
     clearInterval(backgroundMusicInterval);
     backgroundMusicInterval = null;
   }
-  synth.stopAll();
+  backgroundMusic.pause();
+  backgroundMusic.currentTime = 0;
 }
 
 // Sprite loading
@@ -43,10 +99,13 @@ const sprites = {
 
 let spritesLoaded = 0;
 const totalSprites = Object.keys(sprites).length;
+let gameStarted = false;
 
 function checkAllSpritesLoaded() {
   spritesLoaded++;
   if (spritesLoaded === totalSprites) {
+    // Show play button and start game setup
+    document.getElementById('playButton').style.display = 'block';
     startGame();
   }
 }
@@ -321,7 +380,9 @@ function gameLoop() {
       player.velocityY = player.jumpForce;
       player.grounded = false;
       updateScore('jump');
-      synth.playSequence(gameMelodies.jump, 240);
+      const jumpSound = new Audio('audio/jump.wav');
+      jumpSound.volume = 0.7;
+      jumpSound.play().catch(error => console.error('Jump sound failed to play:', error));
     }
 
     // Apply gravity
@@ -336,6 +397,23 @@ function gameLoop() {
     }
 
     if (player.x < 0) player.x = 0;
+
+    // Check spike collisions
+    const spikes = levels[currentLevel].spikes;
+    spikes.forEach(spike => {
+      if (player.x < spike.x + spike.width &&
+          player.x + player.width > spike.x &&
+          player.y < spike.y + spike.height &&
+          player.y + player.height > spike.y) {
+        // Player hit a spike
+        gameLost = true;
+        stopBackgroundMusic();
+        const loseSound = new Audio('audio/lose.wav');
+        loseSound.volume = 0.7;
+        loseSound.play().catch(error => console.error('Lose sound failed to play:', error));
+        updateScore('spikeHit');
+      }
+    });
   }
 
   // Get current level info
@@ -428,7 +506,9 @@ function gameLoop() {
       gameWon = true;
       stopBackgroundMusic();
       updateScore('levelComplete');
-      synth.playSequence(gameMelodies.win, 120);
+      const winSound = new Audio('audio/win.wav');
+      winSound.volume = 0.7; // Increased from 0.3 to 0.7 for louder win sound
+      winSound.play().catch(error => console.error('Win sound failed to play:', error));
     }
   }
 
@@ -525,13 +605,34 @@ function setupKeyboardControls() {
   });
 }
 
+// Add play button handling
+function setupPlayButton() {
+  const playButton = document.getElementById('playButton');
+  
+  playButton.addEventListener('click', () => {
+    if (!gameStarted) {
+      gameStarted = true;
+      playButton.style.display = 'none';
+      initializeAudio();
+      gameLoop();
+    }
+  });
+}
+
 // Call setupTouchControls and setupKeyboardControls when the game starts
 function startGame() {
   setupTouchControls();
   setupKeyboardControls();
   setupRestartButton();
-  playBackgroundMusic();
-  gameLoop();
+  setupPlayButton();
+  // Draw initial game state
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#88cc88';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // Draw ground
+  ctx.drawImage(sprites.ground, 0, 380, 2000, 20);
+  // Draw player
+  ctx.drawImage(sprites.player, 50, 350, 30, 30);
 }
 
 // Add a function to show high scores during gameplay
@@ -595,3 +696,23 @@ function resetPlayer() {
   player.health = 100;
   player.invulnerable = false;
 }
+
+// Add click event listener for audio initialization
+document.addEventListener('click', () => {
+  console.log('Click detected, initializing audio...');
+  if (!audioInitialized) {
+    initializeAudio();
+  }
+});
+
+// Add keyboard event listener for audio initialization and muting
+document.addEventListener('keydown', (e) => {
+  console.log('Key pressed:', e.key);
+  if (!audioInitialized) {
+    initializeAudio();
+  }
+  // Add M key for muting
+  if (e.key.toLowerCase() === 'm') {
+    toggleMute();
+  }
+});
