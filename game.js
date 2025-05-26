@@ -385,8 +385,53 @@ function gameLoop() {
   }
 }
 
-// Start game with music
+// Add touch controls
+function setupTouchControls() {
+  const leftButton = document.getElementById('leftButton');
+  const rightButton = document.getElementById('rightButton');
+  const jumpButton = document.getElementById('jumpButton');
+
+  // Left button controls
+  leftButton.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    keys['ArrowLeft'] = true;
+  });
+  leftButton.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    keys['ArrowLeft'] = false;
+  });
+
+  // Right button controls
+  rightButton.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    keys['ArrowRight'] = true;
+  });
+  rightButton.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    keys['ArrowRight'] = false;
+  });
+
+  // Jump button controls
+  jumpButton.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    keys['ArrowUp'] = true;
+  });
+  jumpButton.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    keys['ArrowUp'] = false;
+  });
+
+  // Prevent default touch behavior on buttons
+  [leftButton, rightButton, jumpButton].forEach(button => {
+    button.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+    });
+  });
+}
+
+// Call setupTouchControls when the game starts
 function startGame() {
+  setupTouchControls();
   playBackgroundMusic();
   gameLoop();
 }

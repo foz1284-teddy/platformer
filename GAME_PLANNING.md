@@ -1,5 +1,9 @@
 # Platformer Game Development Plansdfsdfsdfsd
 
+## bugs
+- [x] tablet controls
+- [ ] tablet restart button
+
 ## Core Gameplay Features
 
 ### Player Mechanics
