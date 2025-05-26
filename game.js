@@ -62,21 +62,23 @@ sprites.spike.src = 'sprites/spike.svg';
 sprites.portal.src = 'sprites/portal.svg';
 sprites.ground.src = 'sprites/ground.svg';
 
-// Player
-const player = {
-  x: 50,
-  y: 350,
-  width: 30,
-  height: 30,
-  color: 'blue',
-  speed: 2,
-  velocityY: 0,
-  jumpForce: -15,
-  gravity: 0.4,
-  grounded: true,
-  facingRight: true
+// Add hazard types
+const HAZARD_TYPES = {
+  WATER: {
+    color: '#4a90e2',
+    damage: 0,
+    name: 'water',
+    effect: 'sink'
+  },
+  LAVA: {
+    color: '#e74c3c',
+    damage: 100,
+    name: 'lava',
+    effect: 'burn'
+  }
 };
 
+// Update levels to include hazards
 const levels = [
   {
     portal: { x: 1600, y: 350 },
@@ -84,6 +86,10 @@ const levels = [
       { x: 400, y: 360, width: 20, height: 20, name:"spike1" },
       { x: 800, y: 360, width: 20, height: 20, name:"spike2" },
       { x: 1200, y: 360, width: 20, height: 20, name:"spike3" }
+    ],
+    hazards: [
+      { x: 600, y: 380, width: 100, height: 20, type: 'WATER' },
+      { x: 1000, y: 380, width: 100, height: 20, type: 'LAVA' }
     ]
   },
   {
@@ -93,6 +99,11 @@ const levels = [
       { x: 900, y: 340, width: 20, height: 40 },
       { x: 1300, y: 340, width: 20, height: 40 },
       { x: 1700, y: 340, width: 20, height: 40 }
+    ],
+    hazards: [
+      { x: 700, y: 380, width: 150, height: 20, type: 'WATER' },
+      { x: 1100, y: 380, width: 150, height: 20, type: 'LAVA' },
+      { x: 1500, y: 380, width: 150, height: 20, type: 'WATER' }
     ]
   }
 ];
@@ -192,11 +203,40 @@ function resetScore() {
   score.combo = 0;
 }
 
-function resetPlayer() {
-  player.x = 50;
-  player.y = 350;
-  player.velocityY = 0;
-  player.grounded = true;
+// Update player object to include health
+const player = {
+  x: 50,
+  y: 350,
+  width: 30,
+  height: 30,
+  color: 'blue',
+  speed: 2,
+  velocityY: 0,
+  jumpForce: -15,
+  gravity: 0.4,
+  grounded: true,
+  facingRight: true,
+  health: 100,
+  invulnerable: false
+};
+
+// Add hazard effects
+function handleHazardEffect(hazard, player) {
+  switch(hazard.type) {
+    case 'WATER':
+      // Make player sink faster in water
+      player.velocityY += player.gravity * 0.5;
+      break;
+    case 'LAVA':
+      // Deal damage and bounce player
+      if (!player.invulnerable) {
+        player.velocityY = -10;
+        player.health -= HAZARD_TYPES.LAVA.damage;
+        player.invulnerable = true;
+        setTimeout(() => player.invulnerable = false, 1000);
+      }
+      break;
+  }
 }
 
 // Draw high score table
@@ -267,7 +307,6 @@ function gameLoop() {
     if (keys['ArrowRight']) {
       player.x += player.speed;
       player.facingRight = true;
-      // Update distance score
       const distance = player.x - score.lastX;
       if (distance > 0) {
         updateScore('distance', distance);
@@ -302,9 +341,40 @@ function gameLoop() {
   // Get current level info
   const portal = levels[currentLevel].portal;
   const spikes = levels[currentLevel].spikes;
+  const hazards = levels[currentLevel].hazards;
 
   // Draw ground
   ctx.drawImage(sprites.ground, -cameraX, 380, 2000, 20);
+
+  // Draw hazards
+  hazards.forEach(hazard => {
+    const hazardType = HAZARD_TYPES[hazard.type];
+    ctx.fillStyle = hazardType.color;
+    ctx.fillRect(hazard.x - cameraX, hazard.y, hazard.width, hazard.height);
+    
+    // Add animation effect
+    if (hazard.type === 'LAVA') {
+      // Draw lava bubbles
+      for (let i = 0; i < 3; i++) {
+        const bubbleX = hazard.x - cameraX + Math.random() * hazard.width;
+        const bubbleY = hazard.y + Math.random() * hazard.height;
+        ctx.beginPath();
+        ctx.arc(bubbleX, bubbleY, 2, 0, Math.PI * 2);
+        ctx.fillStyle = '#ff6b6b';
+        ctx.fill();
+      }
+    } else if (hazard.type === 'WATER') {
+      // Draw water ripples
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 2; i++) {
+        const rippleX = hazard.x - cameraX + Math.random() * hazard.width;
+        ctx.beginPath();
+        ctx.arc(rippleX, hazard.y + hazard.height/2, 5, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+  });
 
   // Draw player
   ctx.save();
@@ -317,6 +387,15 @@ function gameLoop() {
   }
   ctx.restore();
 
+  // Draw health bar
+  const healthBarWidth = 50;
+  const healthBarHeight = 5;
+  const healthPercentage = player.health / 100;
+  ctx.fillStyle = '#e74c3c';
+  ctx.fillRect(player.x - cameraX, player.y - 10, healthBarWidth, healthBarHeight);
+  ctx.fillStyle = '#2ecc71';
+  ctx.fillRect(player.x - cameraX, player.y - 10, healthBarWidth * healthPercentage, healthBarHeight);
+
   // Draw portal
   ctx.drawImage(sprites.portal, portal.x - cameraX, portal.y, 30, 30);
 
@@ -325,16 +404,20 @@ function gameLoop() {
     ctx.drawImage(sprites.spike, spike.x - cameraX, spike.y, spike.width, spike.height);
   });
 
-  // Check collisions with spikes
-  spikes.forEach(spike => {
-    if (player.x < spike.x + spike.width &&
-        player.x + player.width > spike.x &&
-        player.y < spike.y + spike.height &&
-        player.y + player.height > spike.y) {
-      gameLost = true;
-      updateScore('spikeHit');
+  // Check collisions with hazards
+  hazards.forEach(hazard => {
+    if (player.x < hazard.x + hazard.width &&
+        player.x + player.width > hazard.x &&
+        player.y < hazard.y + hazard.height &&
+        player.y + player.height > hazard.y) {
+      handleHazardEffect(hazard, player);
     }
   });
+
+  // Check if player is dead
+  if (player.health <= 0) {
+    gameLost = true;
+  }
 
   // Check win condition
   if (player.x + player.width >= portal.x &&
@@ -431,9 +514,21 @@ function setupTouchControls() {
   });
 }
 
-// Call setupTouchControls when the game starts
+// Add keyboard controls
+function setupKeyboardControls() {
+  window.addEventListener('keydown', (e) => {
+    keys[e.key] = true;
+  });
+  
+  window.addEventListener('keyup', (e) => {
+    keys[e.key] = false;
+  });
+}
+
+// Call setupTouchControls and setupKeyboardControls when the game starts
 function startGame() {
   setupTouchControls();
+  setupKeyboardControls();
   setupRestartButton();
   playBackgroundMusic();
   gameLoop();
@@ -489,4 +584,14 @@ function toggleHighScores() {
       overlay.remove();
     }
   }
+}
+
+// Update reset player function
+function resetPlayer() {
+  player.x = 50;
+  player.y = 350;
+  player.velocityY = 0;
+  player.grounded = true;
+  player.health = 100;
+  player.invulnerable = false;
 }
