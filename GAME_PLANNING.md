@@ -21,7 +21,7 @@
 - [ ] Background parallax effects
 - [ ] Different themes for levels (forest, cave, castle, etc.)
 - [ ] Checkpoint system
-- [ ] Secret areas and collectibles
+- [x ] Secret areas and collectibles
 
 ### Enemies & Obstacles
 - [ ] Moving enemies with different patterns

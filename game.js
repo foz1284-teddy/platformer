@@ -639,7 +639,7 @@ function gameLoop() {
     });
 
     // Draw ground
-    ctx.drawImage(sprites.ground, -cameraX, 380, 2000, 20);
+    ctx.drawImage(sprites.ground, -cameraX, 380, 3000, 20);
 
     // Draw secret areas
     secretAreas.forEach(area => {
@@ -893,7 +893,7 @@ function startGame() {
   ctx.fillStyle = '#88cc88';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   // Draw ground
-  ctx.drawImage(sprites.ground, 0, 380, 2000, 20);
+  ctx.drawImage(sprites.ground, 0, 380, 3000, 20);
   // Draw player
   ctx.drawImage(sprites.player, 50, 350, 30, 30);
 }
