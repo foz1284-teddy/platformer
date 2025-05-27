@@ -2,7 +2,7 @@
 
 ## bugs
 - [x] tablet controls
-- [ ] tablet restart button
+- [x ] tablet restart button
 
 ## Core Gameplay Features
 
@@ -43,13 +43,13 @@
 
 ## Audio
 - [x ] Background music
-- [ ] Make the Audio Better - use MP3s as described in the audio folder readme file
+- [x ] Make the Audio Better - use MP3s as described in the audio folder readme file
 - [ ] Sound effects for:
-  - [ ] Jumping
+  - [x ] Jumping
   - [ ] Landing
   - [ ] Collecting items
   - [ ] Taking damage
-  - [ ] Level completion
+  - [x ] Level completion
 - [ ] Ambient environmental sounds
 
 ## UI/UX
