@@ -94,7 +94,10 @@ const sprites = {
   player: new Image(),
   spike: new Image(),
   portal: new Image(),
-  ground: new Image()
+  ground: new Image(),
+  coin: new Image(),
+  gem: new Image(),
+  key: new Image()
 };
 
 let spritesLoaded = 0;
@@ -115,11 +118,17 @@ sprites.player.onload = checkAllSpritesLoaded;
 sprites.spike.onload = checkAllSpritesLoaded;
 sprites.portal.onload = checkAllSpritesLoaded;
 sprites.ground.onload = checkAllSpritesLoaded;
+sprites.coin.onload = checkAllSpritesLoaded;
+sprites.gem.onload = checkAllSpritesLoaded;
+sprites.key.onload = checkAllSpritesLoaded;
 
 sprites.player.src = 'sprites/player.svg';
 sprites.spike.src = 'sprites/spike.svg';
 sprites.portal.src = 'sprites/portal.svg';
 sprites.ground.src = 'sprites/ground.svg';
+sprites.coin.src = 'sprites/coin.svg';
+sprites.gem.src = 'sprites/gem.svg';
+sprites.key.src = 'sprites/key.svg';
 
 // Add hazard types
 const HAZARD_TYPES = {
@@ -137,7 +146,27 @@ const HAZARD_TYPES = {
   }
 };
 
-// Update levels to include hazards
+// Add collectible types
+const COLLECTIBLE_TYPES = {
+  COIN: {
+    points: 100,
+    sprite: 'coin',
+    name: 'coin'
+  },
+  GEM: {
+    points: 500,
+    sprite: 'gem',
+    name: 'gem'
+  },
+  KEY: {
+    points: 1000,
+    sprite: 'key',
+    name: 'key',
+    unlocksSecret: true
+  }
+};
+
+// Update levels to include hazards and collectibles
 const levels = [
   {
     portal: { x: 1600, y: 350 },
@@ -149,6 +178,25 @@ const levels = [
     hazards: [
       { x: 600, y: 380, width: 100, height: 20, type: 'WATER' },
       { x: 1000, y: 380, width: 100, height: 20, type: 'LAVA' }
+    ],
+    collectibles: [
+      { x: 300, y: 300, type: 'COIN' },
+      { x: 500, y: 300, type: 'COIN' },
+      { x: 700, y: 300, type: 'GEM' },
+      { x: 900, y: 300, type: 'KEY' }
+    ],
+    secretAreas: [
+      {
+        x: 1200,
+        y: 200,
+        width: 100,
+        height: 100,
+        requiresKey: true,
+        collectibles: [
+          { x: 1250, y: 250, type: 'GEM' },
+          { x: 1300, y: 250, type: 'GEM' }
+        ]
+      }
     ]
   },
   {
@@ -163,6 +211,157 @@ const levels = [
       { x: 700, y: 380, width: 150, height: 20, type: 'WATER' },
       { x: 1100, y: 380, width: 150, height: 20, type: 'LAVA' },
       { x: 1500, y: 380, width: 150, height: 20, type: 'WATER' }
+    ],
+    collectibles: [
+      { x: 400, y: 280, type: 'COIN' },
+      { x: 450, y: 280, type: 'COIN' },
+      { x: 500, y: 280, type: 'COIN' },
+      { x: 800, y: 280, type: 'GEM' },
+      { x: 1200, y: 280, type: 'KEY' },
+      { x: 1600, y: 280, type: 'GEM' }
+    ],
+    secretAreas: [
+      {
+        x: 1400,
+        y: 150,
+        width: 150,
+        height: 150,
+        requiresKey: true,
+        collectibles: [
+          { x: 1450, y: 200, type: 'GEM' },
+          { x: 1500, y: 200, type: 'GEM' },
+          { x: 1475, y: 250, type: 'COIN' }
+        ]
+      }
+    ]
+  },
+  {
+    portal: { x: 2200, y: 350 },
+    spikes: [
+      { x: 400, y: 340, width: 20, height: 40 },
+      { x: 600, y: 340, width: 20, height: 40 },
+      { x: 800, y: 340, width: 20, height: 40 },
+      { x: 1000, y: 340, width: 20, height: 40 },
+      { x: 1200, y: 340, width: 20, height: 40 },
+      { x: 1400, y: 340, width: 20, height: 40 },
+      { x: 1600, y: 340, width: 20, height: 40 },
+      { x: 1800, y: 340, width: 20, height: 40 },
+      { x: 2000, y: 340, width: 20, height: 40 }
+    ],
+    hazards: [
+      { x: 500, y: 380, width: 80, height: 20, type: 'LAVA' },
+      { x: 700, y: 380, width: 80, height: 20, type: 'WATER' },
+      { x: 900, y: 380, width: 80, height: 20, type: 'LAVA' },
+      { x: 1100, y: 380, width: 80, height: 20, type: 'WATER' },
+      { x: 1300, y: 380, width: 80, height: 20, type: 'LAVA' },
+      { x: 1500, y: 380, width: 80, height: 20, type: 'WATER' },
+      { x: 1700, y: 380, width: 80, height: 20, type: 'LAVA' },
+      { x: 1900, y: 380, width: 80, height: 20, type: 'WATER' }
+    ],
+    collectibles: [
+      { x: 350, y: 280, type: 'COIN' },
+      { x: 650, y: 280, type: 'COIN' },
+      { x: 950, y: 280, type: 'COIN' },
+      { x: 1250, y: 280, type: 'GEM' },
+      { x: 1550, y: 280, type: 'KEY' },
+      { x: 1850, y: 280, type: 'GEM' },
+      { x: 2050, y: 280, type: 'COIN' },
+      { x: 2350, y: 280, type: 'GEM' }
+    ],
+    secretAreas: [
+      {
+        x: 1000,
+        y: 100,
+        width: 200,
+        height: 200,
+        requiresKey: true,
+        collectibles: [
+          { x: 1050, y: 150, type: 'GEM' },
+          { x: 1100, y: 150, type: 'GEM' },
+          { x: 1150, y: 150, type: 'GEM' },
+          { x: 1075, y: 200, type: 'COIN' },
+          { x: 1125, y: 200, type: 'COIN' }
+        ]
+      },
+      {
+        x: 2000,
+        y: 100,
+        width: 200,
+        height: 200,
+        requiresKey: true,
+        collectibles: [
+          { x: 2050, y: 150, type: 'GEM' },
+          { x: 2100, y: 150, type: 'GEM' },
+          { x: 2150, y: 150, type: 'GEM' }
+        ]
+      }
+    ]
+  },
+  {
+    portal: { x: 2500, y: 350 },
+    spikes: [
+      { x: 300, y: 340, width: 20, height: 40 },
+      { x: 500, y: 340, width: 20, height: 40 },
+      { x: 700, y: 340, width: 20, height: 40 },
+      { x: 900, y: 340, width: 20, height: 40 },
+      { x: 1100, y: 340, width: 20, height: 40 },
+      { x: 1300, y: 340, width: 20, height: 40 },
+      { x: 1500, y: 340, width: 20, height: 40 },
+      { x: 1700, y: 340, width: 20, height: 40 },
+      { x: 1900, y: 340, width: 20, height: 40 },
+      { x: 2100, y: 340, width: 20, height: 40 },
+      { x: 2300, y: 340, width: 20, height: 40 }
+    ],
+    hazards: [
+      { x: 400, y: 380, width: 60, height: 20, type: 'LAVA' },
+      { x: 600, y: 380, width: 60, height: 20, type: 'WATER' },
+      { x: 800, y: 380, width: 60, height: 20, type: 'LAVA' },
+      { x: 1000, y: 380, width: 60, height: 20, type: 'WATER' },
+      { x: 1200, y: 380, width: 60, height: 20, type: 'LAVA' },
+      { x: 1400, y: 380, width: 60, height: 20, type: 'WATER' },
+      { x: 1600, y: 380, width: 60, height: 20, type: 'LAVA' },
+      { x: 1800, y: 380, width: 60, height: 20, type: 'WATER' },
+      { x: 2000, y: 380, width: 60, height: 20, type: 'LAVA' },
+      { x: 2200, y: 380, width: 60, height: 20, type: 'WATER' }
+    ],
+    collectibles: [
+      { x: 250, y: 280, type: 'COIN' },
+      { x: 550, y: 280, type: 'COIN' },
+      { x: 850, y: 280, type: 'COIN' },
+      { x: 1150, y: 280, type: 'GEM' },
+      { x: 1450, y: 280, type: 'KEY' },
+      { x: 1750, y: 280, type: 'GEM' },
+      { x: 2050, y: 280, type: 'COIN' },
+      { x: 2350, y: 280, type: 'GEM' }
+    ],
+    secretAreas: [
+      {
+        x: 1200,
+        y: 50,
+        width: 250,
+        height: 250,
+        requiresKey: true,
+        collectibles: [
+          { x: 1250, y: 100, type: 'GEM' },
+          { x: 1300, y: 100, type: 'GEM' },
+          { x: 1350, y: 100, type: 'GEM' },
+          { x: 1275, y: 150, type: 'COIN' },
+          { x: 1325, y: 150, type: 'COIN' },
+          { x: 1375, y: 150, type: 'COIN' }
+        ]
+      },
+      {
+        x: 2000,
+        y: 100,
+        width: 200,
+        height: 200,
+        requiresKey: true,
+        collectibles: [
+          { x: 2050, y: 150, type: 'GEM' },
+          { x: 2100, y: 150, type: 'GEM' },
+          { x: 2150, y: 150, type: 'GEM' }
+        ]
+      }
     ]
   }
 ];
@@ -189,7 +388,10 @@ const SCORE_VALUES = {
   DISTANCE: 1, // Points per pixel moved
   COMBO_MULTIPLIER: 1.5,
   LEVEL_COMPLETE: 1000,
-  SPIKE_HIT: -100
+  SPIKE_HIT: -100,
+  COIN: 100,
+  GEM: 500,
+  KEY: 1000
 };
 
 // High score system
@@ -220,6 +422,10 @@ function drawScore() {
   ctx.fillText(`Score: ${Math.floor(score.points)}`, 20, 30);
   ctx.fillText(`High Score: ${Math.floor(score.highScore)}`, 20, 60);
   ctx.fillText(`Combo: ${score.combo}x`, 20, 90);
+  ctx.fillText(`Items: ${player.collectedItems.length}`, 20, 120);
+  if (player.hasKey) {
+    ctx.fillText('Key: Yes', 20, 150);
+  }
 }
 
 // Update score
@@ -244,6 +450,10 @@ function updateScore(type, value = 1) {
     case 'spikeHit':
       score.points += SCORE_VALUES.SPIKE_HIT;
       score.combo = 0;
+      break;
+    case 'collectible':
+      score.points += value;
+      score.combo++;
       break;
   }
   
@@ -276,8 +486,14 @@ const player = {
   grounded: true,
   facingRight: true,
   health: 100,
-  invulnerable: false
+  invulnerable: false,
+  hasKey: false,
+  collectedItems: []
 };
+
+// Add collection sound
+const collectSound = new Audio('audio/collect.wav');
+collectSound.volume = 0.7;
 
 // Add hazard effects
 function handleHazardEffect(hazard, player) {
@@ -398,8 +614,15 @@ function gameLoop() {
 
     if (player.x < 0) player.x = 0;
 
+    // Get current level info
+    const currentLevelData = levels[currentLevel];
+    const portal = currentLevelData.portal;
+    const spikes = currentLevelData.spikes;
+    const hazards = currentLevelData.hazards;
+    const collectibles = currentLevelData.collectibles;
+    const secretAreas = currentLevelData.secretAreas;
+
     // Check spike collisions
-    const spikes = levels[currentLevel].spikes;
     spikes.forEach(spike => {
       if (player.x < spike.x + spike.width &&
           player.x + player.width > spike.x &&
@@ -414,139 +637,179 @@ function gameLoop() {
         updateScore('spikeHit');
       }
     });
-  }
 
-  // Get current level info
-  const portal = levels[currentLevel].portal;
-  const spikes = levels[currentLevel].spikes;
-  const hazards = levels[currentLevel].hazards;
+    // Draw ground
+    ctx.drawImage(sprites.ground, -cameraX, 380, 2000, 20);
 
-  // Draw ground
-  ctx.drawImage(sprites.ground, -cameraX, 380, 2000, 20);
-
-  // Draw hazards
-  hazards.forEach(hazard => {
-    const hazardType = HAZARD_TYPES[hazard.type];
-    ctx.fillStyle = hazardType.color;
-    ctx.fillRect(hazard.x - cameraX, hazard.y, hazard.width, hazard.height);
-    
-    // Add animation effect
-    if (hazard.type === 'LAVA') {
-      // Draw lava bubbles
-      for (let i = 0; i < 3; i++) {
-        const bubbleX = hazard.x - cameraX + Math.random() * hazard.width;
-        const bubbleY = hazard.y + Math.random() * hazard.height;
-        ctx.beginPath();
-        ctx.arc(bubbleX, bubbleY, 2, 0, Math.PI * 2);
-        ctx.fillStyle = '#ff6b6b';
-        ctx.fill();
+    // Draw secret areas
+    secretAreas.forEach(area => {
+      if (!area.unlocked && player.hasKey) {
+        area.unlocked = true;
       }
-    } else if (hazard.type === 'WATER') {
-      // Draw water ripples
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 1;
-      for (let i = 0; i < 2; i++) {
-        const rippleX = hazard.x - cameraX + Math.random() * hazard.width;
-        ctx.beginPath();
-        ctx.arc(rippleX, hazard.y + hazard.height/2, 5, 0, Math.PI * 2);
-        ctx.stroke();
+      
+      if (area.unlocked) {
+        // Draw secret area background
+        ctx.fillStyle = 'rgba(255, 215, 0, 0.2)';
+        ctx.fillRect(area.x - cameraX, area.y, area.width, area.height);
+        
+        // Draw secret area collectibles
+        area.collectibles.forEach(collectible => {
+          if (!collectible.collected) {
+            const sprite = sprites[COLLECTIBLE_TYPES[collectible.type].sprite];
+            ctx.drawImage(sprite, collectible.x - cameraX, collectible.y, 20, 20);
+            
+            // Check collection
+            if (player.x < collectible.x + 20 &&
+                player.x + player.width > collectible.x &&
+                player.y < collectible.y + 20 &&
+                player.y + player.height > collectible.y) {
+              handleCollectible(collectible);
+            }
+          }
+        });
+      }
+    });
+
+    // Draw collectibles
+    collectibles.forEach(collectible => {
+      if (!collectible.collected) {
+        const sprite = sprites[COLLECTIBLE_TYPES[collectible.type].sprite];
+        ctx.drawImage(sprite, collectible.x - cameraX, collectible.y, 20, 20);
+        
+        // Check collection
+        if (player.x < collectible.x + 20 &&
+            player.x + player.width > collectible.x &&
+            player.y < collectible.y + 20 &&
+            player.y + player.height > collectible.y) {
+          handleCollectible(collectible);
+        }
+      }
+    });
+
+    // Draw hazards
+    hazards.forEach(hazard => {
+      const hazardType = HAZARD_TYPES[hazard.type];
+      ctx.fillStyle = hazardType.color;
+      ctx.fillRect(hazard.x - cameraX, hazard.y, hazard.width, hazard.height);
+      
+      // Add animation effect
+      if (hazard.type === 'LAVA') {
+        // Draw lava bubbles
+        for (let i = 0; i < 3; i++) {
+          const bubbleX = hazard.x - cameraX + Math.random() * hazard.width;
+          const bubbleY = hazard.y + Math.random() * hazard.height;
+          ctx.beginPath();
+          ctx.arc(bubbleX, bubbleY, 2, 0, Math.PI * 2);
+          ctx.fillStyle = '#ff6b6b';
+          ctx.fill();
+        }
+      } else if (hazard.type === 'WATER') {
+        // Draw water ripples
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 2; i++) {
+          const rippleX = hazard.x - cameraX + Math.random() * hazard.width;
+          ctx.beginPath();
+          ctx.arc(rippleX, hazard.y + hazard.height/2, 5, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      }
+    });
+
+    // Draw player
+    ctx.save();
+    if (!player.facingRight) {
+      ctx.translate(player.x - cameraX + player.width, player.y);
+      ctx.scale(-1, 1);
+      ctx.drawImage(sprites.player, 0, 0, player.width, player.height);
+    } else {
+      ctx.drawImage(sprites.player, player.x - cameraX, player.y, player.width, player.height);
+    }
+    ctx.restore();
+
+    // Draw health bar
+    const healthBarWidth = 50;
+    const healthBarHeight = 5;
+    const healthPercentage = player.health / 100;
+    ctx.fillStyle = '#e74c3c';
+    ctx.fillRect(player.x - cameraX, player.y - 10, healthBarWidth, healthBarHeight);
+    ctx.fillStyle = '#2ecc71';
+    ctx.fillRect(player.x - cameraX, player.y - 10, healthBarWidth * healthPercentage, healthBarHeight);
+
+    // Draw portal
+    ctx.drawImage(sprites.portal, portal.x - cameraX, portal.y, 30, 30);
+
+    // Draw spikes
+    spikes.forEach(spike => {
+      ctx.drawImage(sprites.spike, spike.x - cameraX, spike.y, spike.width, spike.height);
+    });
+
+    // Check collisions with hazards
+    hazards.forEach(hazard => {
+      if (player.x < hazard.x + hazard.width &&
+          player.x + player.width > hazard.x &&
+          player.y < hazard.y + hazard.height &&
+          player.y + player.height > hazard.y) {
+        handleHazardEffect(hazard, player);
+      }
+    });
+
+    // Check if player is dead
+    if (player.health <= 0) {
+      gameLost = true;
+    }
+
+    // Check win condition
+    if (player.x + player.width >= portal.x &&
+        player.x <= portal.x + 30 &&
+        player.y + player.height >= portal.y &&
+        player.y <= portal.y + 30) {
+      if (!gameWon) {
+        gameWon = true;
+        stopBackgroundMusic();
+        updateScore('levelComplete');
+        const winSound = new Audio('audio/win.wav');
+        winSound.volume = 0.7; // Increased from 0.3 to 0.7 for louder win sound
+        winSound.play().catch(error => console.error('Win sound failed to play:', error));
       }
     }
-  });
 
-  // Draw player
-  ctx.save();
-  if (!player.facingRight) {
-    ctx.translate(player.x - cameraX + player.width, player.y);
-    ctx.scale(-1, 1);
-    ctx.drawImage(sprites.player, 0, 0, player.width, player.height);
-  } else {
-    ctx.drawImage(sprites.player, player.x - cameraX, player.y, player.width, player.height);
-  }
-  ctx.restore();
+    // Draw score
+    drawScore();
 
-  // Draw health bar
-  const healthBarWidth = 50;
-  const healthBarHeight = 5;
-  const healthPercentage = player.health / 100;
-  ctx.fillStyle = '#e74c3c';
-  ctx.fillRect(player.x - cameraX, player.y - 10, healthBarWidth, healthBarHeight);
-  ctx.fillStyle = '#2ecc71';
-  ctx.fillRect(player.x - cameraX, player.y - 10, healthBarWidth * healthPercentage, healthBarHeight);
-
-  // Draw portal
-  ctx.drawImage(sprites.portal, portal.x - cameraX, portal.y, 30, 30);
-
-  // Draw spikes
-  spikes.forEach(spike => {
-    ctx.drawImage(sprites.spike, spike.x - cameraX, spike.y, spike.width, spike.height);
-  });
-
-  // Check collisions with hazards
-  hazards.forEach(hazard => {
-    if (player.x < hazard.x + hazard.width &&
-        player.x + player.width > hazard.x &&
-        player.y < hazard.y + hazard.height &&
-        player.y + player.height > hazard.y) {
-      handleHazardEffect(hazard, player);
+    if (gameWon) {
+      ctx.fillStyle = 'black';
+      ctx.font = '36px sans-serif';
+      ctx.fillText('Level Complete! Press Enter.', 150, 200);
+      ctx.font = '24px sans-serif';
+      ctx.fillText(`Final Score: ${Math.floor(score.points)}`, 150, 240);
+      ctx.fillText(`Max Combo: ${score.maxCombo}x`, 150, 280);
+      
+      // Add score to high scores
+      highScores.addScore(score.points, currentLevel);
+      
+      // Show high score table
+      drawHighScoreTable();
+      
+      // Show restart button
+      document.getElementById('restartButton').style.display = 'block';
+      document.getElementById('restartButton').textContent = 'Next Level';
+    } else if (gameLost) {
+      ctx.fillStyle = 'black';
+      ctx.font = '36px sans-serif';
+      ctx.fillText('You Lost! Press Enter to Retry.', 120, 200);
+      ctx.font = '24px sans-serif';
+      ctx.fillText(`Score: ${Math.floor(score.points)}`, 150, 240);
+      
+      // Show high score table
+      drawHighScoreTable();
+      
+      // Show restart button
+      document.getElementById('restartButton').style.display = 'block';
+      document.getElementById('restartButton').textContent = 'Try Again';
+    } else {
+      requestAnimationFrame(gameLoop);
     }
-  });
-
-  // Check if player is dead
-  if (player.health <= 0) {
-    gameLost = true;
-  }
-
-  // Check win condition
-  if (player.x + player.width >= portal.x &&
-      player.x <= portal.x + 30 &&
-      player.y + player.height >= portal.y &&
-      player.y <= portal.y + 30) {
-    if (!gameWon) {
-      gameWon = true;
-      stopBackgroundMusic();
-      updateScore('levelComplete');
-      const winSound = new Audio('audio/win.wav');
-      winSound.volume = 0.7; // Increased from 0.3 to 0.7 for louder win sound
-      winSound.play().catch(error => console.error('Win sound failed to play:', error));
-    }
-  }
-
-  // Draw score
-  drawScore();
-
-  if (gameWon) {
-    ctx.fillStyle = 'black';
-    ctx.font = '36px sans-serif';
-    ctx.fillText('Level Complete! Press Enter.', 150, 200);
-    ctx.font = '24px sans-serif';
-    ctx.fillText(`Final Score: ${Math.floor(score.points)}`, 150, 240);
-    ctx.fillText(`Max Combo: ${score.maxCombo}x`, 150, 280);
-    
-    // Add score to high scores
-    highScores.addScore(score.points, currentLevel);
-    
-    // Show high score table
-    drawHighScoreTable();
-    
-    // Show restart button
-    document.getElementById('restartButton').style.display = 'block';
-    document.getElementById('restartButton').textContent = 'Next Level';
-  } else if (gameLost) {
-    ctx.fillStyle = 'black';
-    ctx.font = '36px sans-serif';
-    ctx.fillText('You Lost! Press Enter to Retry.', 120, 200);
-    ctx.font = '24px sans-serif';
-    ctx.fillText(`Score: ${Math.floor(score.points)}`, 150, 240);
-    
-    // Show high score table
-    drawHighScoreTable();
-    
-    // Show restart button
-    document.getElementById('restartButton').style.display = 'block';
-    document.getElementById('restartButton').textContent = 'Try Again';
-  } else {
-    requestAnimationFrame(gameLoop);
   }
 }
 
@@ -695,6 +958,8 @@ function resetPlayer() {
   player.grounded = true;
   player.health = 100;
   player.invulnerable = false;
+  player.hasKey = false;
+  player.collectedItems = [];
 }
 
 // Add click event listener for audio initialization
@@ -716,3 +981,19 @@ document.addEventListener('keydown', (e) => {
     toggleMute();
   }
 });
+
+// Add collection mechanics
+function handleCollectible(collectible) {
+  const collectibleType = COLLECTIBLE_TYPES[collectible.type];
+  if (!collectible.collected) {
+    collectible.collected = true;
+    updateScore('collectible', collectibleType.points);
+    collectSound.play().catch(error => console.error('Collect sound failed to play:', error));
+    
+    if (collectibleType.unlocksSecret) {
+      player.hasKey = true;
+    }
+    
+    player.collectedItems.push(collectible.type);
+  }
+}
