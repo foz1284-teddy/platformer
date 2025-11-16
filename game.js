@@ -1103,8 +1103,8 @@ function setupRestartButton() {
 
 // Update the game loop to show/hide restart button
 function gameLoop() {
-  // Pause game loop if shop is open
-  if (shopOpen) {
+  // Pause game loop if shop or level select is open
+  if (shopOpen || levelSelectOpen) {
     requestAnimationFrame(gameLoop);
     return;
   }
@@ -1548,16 +1548,224 @@ function setupKeyboardControls() {
   });
 }
 
+// Level select screen
+let levelSelectOpen = false;
+
+function toggleLevelSelect() {
+  levelSelectOpen = !levelSelectOpen;
+  const levelSelectOverlay = document.getElementById('levelSelectOverlay');
+  if (levelSelectOverlay) {
+    if (levelSelectOpen) {
+      levelSelectOverlay.remove();
+      createLevelSelectUI();
+    } else {
+      levelSelectOverlay.style.display = 'none';
+    }
+  } else if (levelSelectOpen) {
+    createLevelSelectUI();
+  }
+}
+
+function createLevelSelectUI() {
+  const overlay = document.createElement('div');
+  overlay.id = 'levelSelectOverlay';
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    flex-direction: column;
+  `;
+  
+  const container = document.createElement('div');
+  container.style.cssText = `
+    background-color: white;
+    padding: 30px;
+    border-radius: 15px;
+    max-width: 700px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    position: relative;
+  `;
+  
+  // Close button
+  const closeButton = document.createElement('button');
+  closeButton.innerHTML = '✕';
+  closeButton.style.cssText = `
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 2001;
+    line-height: 40px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+  `;
+  closeButton.addEventListener('click', () => toggleLevelSelect());
+  closeButton.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    toggleLevelSelect();
+  });
+  
+  const title = document.createElement('h2');
+  title.textContent = 'Select Level';
+  title.style.cssText = 'text-align: center; margin-bottom: 20px; font-size: 32px;';
+  container.appendChild(title);
+  
+  // Create level buttons
+  const levelsGrid = document.createElement('div');
+  levelsGrid.style.cssText = `
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+  `;
+  
+  levels.forEach((level, index) => {
+    const levelButton = document.createElement('button');
+    levelButton.textContent = `Level ${index + 1}`;
+    levelButton.style.cssText = `
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: 3px solid ${currentLevel === index ? '#4CAF50' : '#333'};
+      border-radius: 10px;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      touch-action: none;
+      -webkit-tap-highlight-color: transparent;
+    `;
+    
+    if (currentLevel === index) {
+      levelButton.style.background = 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)';
+      levelButton.textContent += ' (Current)';
+    }
+    
+    levelButton.addEventListener('click', () => {
+      selectLevel(index);
+    });
+    levelButton.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      selectLevel(index);
+    });
+    
+    levelButton.addEventListener('mouseenter', () => {
+      if (currentLevel !== index) {
+        levelButton.style.transform = 'scale(1.05)';
+      }
+    });
+    levelButton.addEventListener('mouseleave', () => {
+      levelButton.style.transform = 'scale(1)';
+    });
+    
+    levelsGrid.appendChild(levelButton);
+  });
+  
+  container.appendChild(levelsGrid);
+  container.appendChild(closeButton);
+  overlay.appendChild(container);
+  
+  // Allow closing by clicking outside
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      toggleLevelSelect();
+    }
+  });
+  overlay.addEventListener('touchend', (e) => {
+    if (e.target === overlay) {
+      e.preventDefault();
+      toggleLevelSelect();
+    }
+  });
+  
+  document.body.appendChild(overlay);
+}
+
+function selectLevel(levelIndex) {
+  currentLevel = levelIndex;
+  currency.reload();
+  resetCollectibles();
+  resetPlayer();
+  resetScore();
+  gameWon = false;
+  gameLost = false;
+  
+  // Hide overlays
+  const levelSelectOverlay = document.getElementById('levelSelectOverlay');
+  if (levelSelectOverlay) {
+    levelSelectOverlay.remove();
+  }
+  levelSelectOpen = false;
+  
+  const playButton = document.getElementById('playButton');
+  if (playButton) {
+    playButton.style.display = 'none';
+  }
+  
+  const shopButton = document.getElementById('shopButton');
+  if (shopButton) {
+    shopButton.style.display = 'block';
+  }
+  
+  if (!gameStarted) {
+    gameStarted = true;
+    initializeAudio();
+  }
+  
+  gameLoop();
+}
+
+// Setup level select button
+function setupLevelSelectButton() {
+  const levelSelectButton = document.getElementById('levelSelectButton');
+  if (levelSelectButton) {
+    levelSelectButton.addEventListener('click', () => {
+      if (!gameWon && !gameLost && gameStarted) {
+        toggleLevelSelect();
+      }
+    });
+    levelSelectButton.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      if (!gameWon && !gameLost && gameStarted) {
+        toggleLevelSelect();
+      }
+    });
+  }
+}
+
 // Add play button handling
 function setupPlayButton() {
   const playButton = document.getElementById('playButton');
   
   playButton.addEventListener('click', () => {
     if (!gameStarted) {
-      gameStarted = true;
-      playButton.style.display = 'none';
-      initializeAudio();
-      gameLoop();
+      toggleLevelSelect();
+    }
+  });
+  playButton.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    if (!gameStarted) {
+      toggleLevelSelect();
     }
   });
 }
@@ -1581,13 +1789,14 @@ function startGame() {
   setupRestartButton();
   setupPlayButton();
   setupShopButton();
+  setupLevelSelectButton();
   // Initialize skins system
   loadUnlockedSkins();
   player.skinId = localStorage.getItem('currentSkin') || 'default';
-  // Show shop button when game starts
-  const shopButton = document.getElementById('shopButton');
-  if (shopButton) {
-    shopButton.style.display = 'block';
+  // Show level select button when game starts
+  const levelSelectButton = document.getElementById('levelSelectButton');
+  if (levelSelectButton) {
+    levelSelectButton.style.display = 'block';
   }
   // Draw initial game state
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1705,8 +1914,12 @@ document.addEventListener('keydown', (e) => {
     toggleMute();
   }
   // Add S key for shop (only if not in win/loss state)
-  if (e.key.toLowerCase() === 's' && !gameWon && !gameLost) {
+  if (e.key.toLowerCase() === 's' && !gameWon && !gameLost && gameStarted) {
     toggleShop();
+  }
+  // Add L key for level select (only if game is started)
+  if (e.key.toLowerCase() === 'l' && !gameWon && !gameLost && gameStarted) {
+    toggleLevelSelect();
   }
 });
 
