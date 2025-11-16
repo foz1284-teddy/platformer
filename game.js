@@ -1449,6 +1449,18 @@ function createShopUI() {
     z-index: 2000;
     flex-direction: column;
   `;
+  // Allow closing shop by tapping outside the shop container (for tablets)
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      toggleShop();
+    }
+  });
+  overlay.addEventListener('touchend', (e) => {
+    if (e.target === overlay) {
+      e.preventDefault();
+      toggleShop();
+    }
+  });
   
   const shopContainer = document.createElement('div');
   shopContainer.style.cssText = `
@@ -1459,7 +1471,37 @@ function createShopUI() {
     max-height: 80vh;
     overflow-y: auto;
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    position: relative;
   `;
+  
+  // Close button in top-right corner (for tablets)
+  const closeXButton = document.createElement('button');
+  closeXButton.innerHTML = '✕';
+  closeXButton.style.cssText = `
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 2001;
+    line-height: 40px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+  `;
+  closeXButton.addEventListener('click', () => toggleShop());
+  closeXButton.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    toggleShop();
+  });
   
   const title = document.createElement('h2');
   title.textContent = 'Shop';
@@ -1642,7 +1684,14 @@ function createShopUI() {
     margin-top: 20px;
   `;
   closeButton.addEventListener('click', () => toggleShop());
+  closeButton.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    toggleShop();
+  });
   shopContainer.appendChild(closeButton);
+  
+  // Add close X button to shop container (must be after other elements for proper positioning)
+  shopContainer.appendChild(closeXButton);
   
   overlay.appendChild(shopContainer);
   document.body.appendChild(overlay);
