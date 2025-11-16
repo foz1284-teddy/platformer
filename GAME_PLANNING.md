@@ -28,7 +28,7 @@
 - [ ] Projectile-shooting enemies
 - [ ] Flying enemies
 - [ ] Breakable blocks
-- [ ] Lava/water hazards
+- [x] Lava/water hazards
 - [ ] Wind zones that affect player movement
 - [ ] Bouncing platforms
 

@@ -97,7 +97,10 @@ const sprites = {
   ground: new Image(),
   coin: new Image(),
   gem: new Image(),
-  key: new Image()
+  key: new Image(),
+  zombie: new Image(),
+  platform: new Image(),
+  bouncingPlatform: new Image()
 };
 
 let spritesLoaded = 0;
@@ -121,6 +124,9 @@ sprites.ground.onload = checkAllSpritesLoaded;
 sprites.coin.onload = checkAllSpritesLoaded;
 sprites.gem.onload = checkAllSpritesLoaded;
 sprites.key.onload = checkAllSpritesLoaded;
+sprites.zombie.onload = checkAllSpritesLoaded;
+sprites.platform.onload = checkAllSpritesLoaded;
+sprites.bouncingPlatform.onload = checkAllSpritesLoaded;
 
 sprites.player.src = 'sprites/player.svg';
 sprites.spike.src = 'sprites/spike.svg';
@@ -129,18 +135,21 @@ sprites.ground.src = 'sprites/ground.svg';
 sprites.coin.src = 'sprites/coin.svg';
 sprites.gem.src = 'sprites/gem.svg';
 sprites.key.src = 'sprites/key.svg';
+sprites.zombie.src = 'sprites/zombie.svg';
+sprites.platform.src = 'sprites/platform.svg';
+sprites.bouncingPlatform.src = 'sprites/bouncing_platform.svg';
 
 // Add hazard types
 const HAZARD_TYPES = {
   WATER: {
     color: '#4a90e2',
-    damage: 0,
+    damage: 10,
     name: 'water',
     effect: 'sink'
   },
   LAVA: {
     color: '#e74c3c',
-    damage: 100,
+    damage: 20,
     name: 'lava',
     effect: 'burn'
   }
@@ -166,7 +175,7 @@ const COLLECTIBLE_TYPES = {
   }
 };
 
-// Update levels to include hazards and collectibles
+// Update levels to include hazards, collectibles, zombies, and platforms
 const levels = [
   {
     portal: { x: 1600, y: 350 },
@@ -176,14 +185,27 @@ const levels = [
       { x: 1200, y: 360, width: 20, height: 20, name:"spike3" }
     ],
     hazards: [
-      { x: 600, y: 380, width: 100, height: 20, type: 'WATER' },
-      { x: 1000, y: 380, width: 100, height: 20, type: 'LAVA' }
+      { x: 600, y: 379, width: 100, height: 20, type: 'WATER' },
+      { x: 1000, y: 379, width: 100, height: 20, type: 'LAVA' }
+    ],
+    zombies: [
+      { x: 300, y: 350, width: 30, height: 30, speed: 1, direction: 1, startX: 300, endX: 500 }
+    ],
+    platforms: [
+      { x: 200, y: 320, width: 100, height: 20 },
+      { x: 500, y: 280, width: 80, height: 20 },
+      { x: 800, y: 240, width: 100, height: 20 },
+      { x: 1100, y: 300, width: 80, height: 20 }
+    ],
+    bouncingPlatforms: [
+      { x: 350, y: 250, width: 100, height: 20, bounceForce: -12 },
+      { x: 950, y: 200, width: 80, height: 20, bounceForce: -15 }
     ],
     collectibles: [
-      { x: 300, y: 300, type: 'COIN' },
-      { x: 500, y: 300, type: 'COIN' },
-      { x: 700, y: 300, type: 'GEM' },
-      { x: 900, y: 300, type: 'KEY' }
+      { x: 300, y: 280, type: 'COIN' },
+      { x: 500, y: 240, type: 'COIN' },
+      { x: 700, y: 200, type: 'GEM' },
+      { x: 900, y: 260, type: 'KEY' }
     ],
     secretAreas: [
       {
@@ -208,17 +230,34 @@ const levels = [
       { x: 1700, y: 340, width: 20, height: 40 }
     ],
     hazards: [
-      { x: 700, y: 380, width: 150, height: 20, type: 'WATER' },
-      { x: 1100, y: 380, width: 150, height: 20, type: 'LAVA' },
-      { x: 1500, y: 380, width: 150, height: 20, type: 'WATER' }
+      { x: 700, y: 379, width: 150, height: 20, type: 'WATER' },
+      { x: 1100, y: 379, width: 150, height: 20, type: 'LAVA' },
+      { x: 1500, y: 379, width: 150, height: 20, type: 'WATER' }
+    ],
+    zombies: [
+      { x: 400, y: 350, width: 30, height: 30, speed: 1.2, direction: 1, startX: 400, endX: 600 },
+      { x: 1000, y: 350, width: 30, height: 30, speed: 1.2, direction: 1, startX: 1000, endX: 1200 }
+    ],
+    platforms: [
+      { x: 300, y: 300, width: 120, height: 20 },
+      { x: 600, y: 260, width: 100, height: 20 },
+      { x: 850, y: 320, width: 80, height: 20 },
+      { x: 1200, y: 280, width: 100, height: 20 },
+      { x: 1500, y: 240, width: 120, height: 20 },
+      { x: 1750, y: 300, width: 80, height: 20 }
+    ],
+    bouncingPlatforms: [
+      { x: 450, y: 200, width: 100, height: 20, bounceForce: -14 },
+      { x: 1050, y: 180, width: 80, height: 20, bounceForce: -16 },
+      { x: 1650, y: 160, width: 100, height: 20, bounceForce: -18 }
     ],
     collectibles: [
-      { x: 400, y: 280, type: 'COIN' },
-      { x: 450, y: 280, type: 'COIN' },
-      { x: 500, y: 280, type: 'COIN' },
-      { x: 800, y: 280, type: 'GEM' },
-      { x: 1200, y: 280, type: 'KEY' },
-      { x: 1600, y: 280, type: 'GEM' }
+      { x: 400, y: 260, type: 'COIN' },
+      { x: 450, y: 260, type: 'COIN' },
+      { x: 500, y: 260, type: 'COIN' },
+      { x: 800, y: 220, type: 'GEM' },
+      { x: 1200, y: 240, type: 'KEY' },
+      { x: 1600, y: 200, type: 'GEM' }
     ],
     secretAreas: [
       {
@@ -249,24 +288,45 @@ const levels = [
       { x: 2000, y: 340, width: 20, height: 40 }
     ],
     hazards: [
-      { x: 500, y: 380, width: 80, height: 20, type: 'LAVA' },
-      { x: 700, y: 380, width: 80, height: 20, type: 'WATER' },
-      { x: 900, y: 380, width: 80, height: 20, type: 'LAVA' },
-      { x: 1100, y: 380, width: 80, height: 20, type: 'WATER' },
-      { x: 1300, y: 380, width: 80, height: 20, type: 'LAVA' },
-      { x: 1500, y: 380, width: 80, height: 20, type: 'WATER' },
-      { x: 1700, y: 380, width: 80, height: 20, type: 'LAVA' },
-      { x: 1900, y: 380, width: 80, height: 20, type: 'WATER' }
+      { x: 500, y: 379, width: 80, height: 20, type: 'LAVA' },
+      { x: 700, y: 379, width: 80, height: 20, type: 'WATER' },
+      { x: 900, y: 379, width: 80, height: 20, type: 'LAVA' },
+      { x: 1100, y: 379, width: 80, height: 20, type: 'WATER' },
+      { x: 1300, y: 379, width: 80, height: 20, type: 'LAVA' },
+      { x: 1500, y: 379, width: 80, height: 20, type: 'WATER' },
+      { x: 1700, y: 379, width: 80, height: 20, type: 'LAVA' },
+      { x: 1900, y: 379, width: 80, height: 20, type: 'WATER' }
+    ],
+    zombies: [
+      { x: 300, y: 350, width: 30, height: 30, speed: 1.5, direction: 1, startX: 300, endX: 500 },
+      { x: 700, y: 350, width: 30, height: 30, speed: 1.5, direction: 1, startX: 700, endX: 900 },
+      { x: 1100, y: 350, width: 30, height: 30, speed: 1.5, direction: 1, startX: 1100, endX: 1300 },
+      { x: 1500, y: 350, width: 30, height: 30, speed: 1.5, direction: 1, startX: 1500, endX: 1700 }
+    ],
+    platforms: [
+      { x: 250, y: 280, width: 100, height: 20 },
+      { x: 450, y: 240, width: 80, height: 20 },
+      { x: 650, y: 320, width: 60, height: 20 },
+      { x: 850, y: 280, width: 100, height: 20 },
+      { x: 1050, y: 240, width: 80, height: 20 },
+      { x: 1250, y: 320, width: 60, height: 20 },
+      { x: 1450, y: 280, width: 100, height: 20 },
+      { x: 1650, y: 240, width: 80, height: 20 },
+      { x: 1850, y: 320, width: 100, height: 20 }
+    ],
+    bouncingPlatforms: [
+      { x: 350, y: 180, width: 100, height: 20, bounceForce: -16 },
+      { x: 750, y: 160, width: 80, height: 20, bounceForce: -18 },
+      { x: 1150, y: 140, width: 100, height: 20, bounceForce: -20 },
+      { x: 1550, y: 120, width: 80, height: 20, bounceForce: -22 }
     ],
     collectibles: [
-      { x: 350, y: 280, type: 'COIN' },
-      { x: 650, y: 280, type: 'COIN' },
-      { x: 950, y: 280, type: 'COIN' },
-      { x: 1250, y: 280, type: 'GEM' },
-      { x: 1550, y: 280, type: 'KEY' },
-      { x: 1850, y: 280, type: 'GEM' },
-      { x: 2050, y: 280, type: 'COIN' },
-      { x: 2350, y: 280, type: 'GEM' }
+      { x: 350, y: 240, type: 'COIN' },
+      { x: 650, y: 200, type: 'COIN' },
+      { x: 950, y: 240, type: 'COIN' },
+      { x: 1250, y: 200, type: 'GEM' },
+      { x: 1550, y: 240, type: 'KEY' },
+      { x: 1850, y: 280, type: 'GEM' }
     ],
     secretAreas: [
       {
@@ -281,18 +341,6 @@ const levels = [
           { x: 1150, y: 150, type: 'GEM' },
           { x: 1075, y: 200, type: 'COIN' },
           { x: 1125, y: 200, type: 'COIN' }
-        ]
-      },
-      {
-        x: 2000,
-        y: 100,
-        width: 200,
-        height: 200,
-        requiresKey: true,
-        collectibles: [
-          { x: 2050, y: 150, type: 'GEM' },
-          { x: 2100, y: 150, type: 'GEM' },
-          { x: 2150, y: 150, type: 'GEM' }
         ]
       }
     ]
@@ -313,26 +361,54 @@ const levels = [
       { x: 2300, y: 340, width: 20, height: 40 }
     ],
     hazards: [
-      { x: 400, y: 380, width: 60, height: 20, type: 'LAVA' },
-      { x: 600, y: 380, width: 60, height: 20, type: 'WATER' },
-      { x: 800, y: 380, width: 60, height: 20, type: 'LAVA' },
-      { x: 1000, y: 380, width: 60, height: 20, type: 'WATER' },
-      { x: 1200, y: 380, width: 60, height: 20, type: 'LAVA' },
-      { x: 1400, y: 380, width: 60, height: 20, type: 'WATER' },
-      { x: 1600, y: 380, width: 60, height: 20, type: 'LAVA' },
-      { x: 1800, y: 380, width: 60, height: 20, type: 'WATER' },
-      { x: 2000, y: 380, width: 60, height: 20, type: 'LAVA' },
-      { x: 2200, y: 380, width: 60, height: 20, type: 'WATER' }
+      { x: 400, y: 379, width: 60, height: 20, type: 'LAVA' },
+      { x: 600, y: 379, width: 60, height: 20, type: 'WATER' },
+      { x: 800, y: 379, width: 60, height: 20, type: 'LAVA' },
+      { x: 1000, y: 379, width: 60, height: 20, type: 'WATER' },
+      { x: 1200, y: 379, width: 60, height: 20, type: 'LAVA' },
+      { x: 1400, y: 379, width: 60, height: 20, type: 'WATER' },
+      { x: 1600, y: 379, width: 60, height: 20, type: 'LAVA' },
+      { x: 1800, y: 379, width: 60, height: 20, type: 'WATER' },
+      { x: 2000, y: 379, width: 60, height: 20, type: 'LAVA' },
+      { x: 2200, y: 379, width: 60, height: 20, type: 'WATER' }
+    ],
+    zombies: [
+      { x: 200, y: 350, width: 30, height: 30, speed: 2, direction: 1, startX: 200, endX: 400 },
+      { x: 600, y: 350, width: 30, height: 30, speed: 2, direction: 1, startX: 600, endX: 800 },
+      { x: 1000, y: 350, width: 30, height: 30, speed: 2, direction: 1, startX: 1000, endX: 1200 },
+      { x: 1400, y: 350, width: 30, height: 30, speed: 2, direction: 1, startX: 1400, endX: 1600 },
+      { x: 1800, y: 350, width: 30, height: 30, speed: 2, direction: 1, startX: 1800, endX: 2000 },
+      { x: 2200, y: 350, width: 30, height: 30, speed: 2, direction: 1, startX: 2200, endX: 2400 }
+    ],
+    platforms: [
+      { x: 150, y: 280, width: 120, height: 20 },
+      { x: 350, y: 240, width: 100, height: 20 },
+      { x: 550, y: 320, width: 80, height: 20 },
+      { x: 750, y: 280, width: 120, height: 20 },
+      { x: 950, y: 240, width: 100, height: 20 },
+      { x: 1150, y: 320, width: 80, height: 20 },
+      { x: 1350, y: 280, width: 120, height: 20 },
+      { x: 1550, y: 240, width: 100, height: 20 },
+      { x: 1750, y: 320, width: 80, height: 20 },
+      { x: 1950, y: 280, width: 120, height: 20 },
+      { x: 2150, y: 240, width: 100, height: 20 }
+    ],
+    bouncingPlatforms: [
+      { x: 250, y: 160, width: 100, height: 20, bounceForce: -18 },
+      { x: 650, y: 140, width: 80, height: 20, bounceForce: -20 },
+      { x: 1050, y: 120, width: 100, height: 20, bounceForce: -22 },
+      { x: 1450, y: 100, width: 80, height: 20, bounceForce: -24 },
+      { x: 1850, y: 80, width: 100, height: 20, bounceForce: -26 }
     ],
     collectibles: [
-      { x: 250, y: 280, type: 'COIN' },
-      { x: 550, y: 280, type: 'COIN' },
-      { x: 850, y: 280, type: 'COIN' },
+      { x: 250, y: 240, type: 'COIN' },
+      { x: 550, y: 200, type: 'COIN' },
+      { x: 850, y: 240, type: 'COIN' },
       { x: 1150, y: 280, type: 'GEM' },
-      { x: 1450, y: 280, type: 'KEY' },
+      { x: 1450, y: 200, type: 'KEY' },
       { x: 1750, y: 280, type: 'GEM' },
-      { x: 2050, y: 280, type: 'COIN' },
-      { x: 2350, y: 280, type: 'GEM' }
+      { x: 2050, y: 200, type: 'COIN' },
+      { x: 2350, y: 200, type: 'GEM' }
     ],
     secretAreas: [
       {
@@ -384,14 +460,14 @@ const score = {
 
 // Score multipliers and points
 const SCORE_VALUES = {
-  JUMP: 10,
-  DISTANCE: 1, // Points per pixel moved
-  COMBO_MULTIPLIER: 1.5,
-  LEVEL_COMPLETE: 1000,
-  SPIKE_HIT: -100,
-  COIN: 100,
-  GEM: 500,
-  KEY: 1000
+  JUMP: 5,
+  DISTANCE: 0.1, // Points per pixel moved (reduced frequency)
+  COMBO_MULTIPLIER: 1.2,
+  LEVEL_COMPLETE: 500,
+  SPIKE_HIT: -50,
+  COIN: 50,
+  GEM: 200,
+  KEY: 500
 };
 
 // High score system
@@ -433,22 +509,23 @@ function updateScore(type, value = 1) {
   switch(type) {
     case 'jump':
       score.jumpCount++;
-      score.combo++;
-      score.points += SCORE_VALUES.JUMP * (1 + (score.combo * 0.1));
+      // Jumping gives points but doesn't increase combo
+      score.points += SCORE_VALUES.JUMP;
       break;
     case 'distance':
       score.distance += value;
       score.points += SCORE_VALUES.DISTANCE * value;
+      // Don't increase combo for distance - combo should only come from collectibles
       break;
     case 'levelComplete':
-      score.points += SCORE_VALUES.LEVEL_COMPLETE * (1 + (score.combo * 0.1));
+      score.points += SCORE_VALUES.LEVEL_COMPLETE * (1 + (score.combo * 0.05));
       if (score.points > score.highScore) {
         score.highScore = score.points;
         localStorage.setItem('highScore', score.highScore);
       }
       break;
     case 'spikeHit':
-      score.points += SCORE_VALUES.SPIKE_HIT;
+      score.points = Math.max(0, score.points + SCORE_VALUES.SPIKE_HIT);
       score.combo = 0;
       break;
     case 'collectible':
@@ -495,24 +572,9 @@ const player = {
 const collectSound = new Audio('audio/collect.wav');
 collectSound.volume = 0.7;
 
-// Add hazard effects
-function handleHazardEffect(hazard, player) {
-  switch(hazard.type) {
-    case 'WATER':
-      // Make player sink faster in water
-      player.velocityY += player.gravity * 0.5;
-      break;
-    case 'LAVA':
-      // Deal damage and bounce player
-      if (!player.invulnerable) {
-        player.velocityY = -10;
-        player.health -= HAZARD_TYPES.LAVA.damage;
-        player.invulnerable = true;
-        setTimeout(() => player.invulnerable = false, 1000);
-      }
-      break;
-  }
-}
+// Add zombie sound
+const zombieSound = new Audio('audio/zombie.wav');
+zombieSound.volume = 0.7;
 
 // Draw high score table
 function drawHighScoreTable() {
@@ -592,6 +654,8 @@ function gameLoop() {
       player.x -= player.speed;
       player.facingRight = false;
     }
+
+    // Combo only comes from collectibles - no decay system needed
     if (keys['ArrowUp'] && player.grounded) {
       player.velocityY = player.jumpForce;
       player.grounded = false;
@@ -599,6 +663,25 @@ function gameLoop() {
       const jumpSound = new Audio('audio/jump.wav');
       jumpSound.volume = 0.7;
       jumpSound.play().catch(error => console.error('Jump sound failed to play:', error));
+    }
+
+    // Get current level info
+    const currentLevelData = levels[currentLevel];
+    const portal = currentLevelData.portal;
+    const spikes = currentLevelData.spikes;
+    const hazards = currentLevelData.hazards;
+    const collectibles = currentLevelData.collectibles;
+    const secretAreas = currentLevelData.secretAreas;
+    const zombies = currentLevelData.zombies;
+    const platforms = currentLevelData.platforms;
+    const bouncingPlatforms = currentLevelData.bouncingPlatforms;
+    
+    // Debug: log platform data
+    if (platforms && platforms.length > 0) {
+      console.log('Platforms found:', platforms.length, platforms);
+    }
+    if (bouncingPlatforms && bouncingPlatforms.length > 0) {
+      console.log('Bouncing platforms found:', bouncingPlatforms.length, bouncingPlatforms);
     }
 
     // Apply gravity
@@ -612,15 +695,58 @@ function gameLoop() {
       player.grounded = true;
     }
 
-    if (player.x < 0) player.x = 0;
+    // Platform collision
+    platforms.forEach(platform => {
+      if (player.x < platform.x + platform.width &&
+          player.x + player.width > platform.x &&
+          player.y < platform.y + platform.height &&
+          player.y + player.height > platform.y) {
+        
+        // Check if player is falling and hitting platform from above
+        if (player.velocityY > 0 && player.y + player.height - player.velocityY <= platform.y) {
+          // Player is falling and hitting platform from above
+          player.y = platform.y - player.height;
+          player.velocityY = 0;
+          player.grounded = true;
+        }
+        // Check if player is jumping up and hitting platform from below
+        else if (player.velocityY < 0 && player.y - player.velocityY >= platform.y + platform.height) {
+          // Player is jumping up and hitting platform from below
+          player.y = platform.y + platform.height;
+          player.velocityY = 0;
+        }
+      }
+    });
 
-    // Get current level info
-    const currentLevelData = levels[currentLevel];
-    const portal = currentLevelData.portal;
-    const spikes = currentLevelData.spikes;
-    const hazards = currentLevelData.hazards;
-    const collectibles = currentLevelData.collectibles;
-    const secretAreas = currentLevelData.secretAreas;
+    // Bouncing platform collision
+    bouncingPlatforms.forEach(platform => {
+      if (player.x < platform.x + platform.width &&
+          player.x + player.width > platform.x &&
+          player.y < platform.y + platform.height &&
+          player.y + player.height > platform.y) {
+        
+        // Check if player is falling and hitting bouncing platform from above
+        if (player.velocityY > 0 && player.y + player.height - player.velocityY <= platform.y) {
+          // Player is falling and hitting bouncing platform from above
+          player.y = platform.y - player.height;
+          player.velocityY = platform.bounceForce; // Apply bounce force
+          player.grounded = false; // Player is now bouncing, not grounded
+          
+          // Play bounce sound
+          const bounceSound = new Audio('audio/jump.wav');
+          bounceSound.volume = 0.8;
+          bounceSound.play().catch(error => console.error('Bounce sound failed to play:', error));
+        }
+        // Check if player is jumping up and hitting bouncing platform from below
+        else if (player.velocityY < 0 && player.y - player.velocityY >= platform.y + platform.height) {
+          // Player is jumping up and hitting bouncing platform from below
+          player.y = platform.y + platform.height;
+          player.velocityY = 0;
+        }
+      }
+    });
+
+    if (player.x < 0) player.x = 0;
 
     // Check spike collisions
     spikes.forEach(spike => {
@@ -686,129 +812,174 @@ function gameLoop() {
       }
     });
 
-    // Draw hazards
-    hazards.forEach(hazard => {
-      const hazardType = HAZARD_TYPES[hazard.type];
-      ctx.fillStyle = hazardType.color;
-      ctx.fillRect(hazard.x - cameraX, hazard.y, hazard.width, hazard.height);
+    // Draw zombies
+    zombies.forEach(zombie => {
+      // Move zombie
+      zombie.x += zombie.speed * zombie.direction;
       
-      // Add animation effect
-      if (hazard.type === 'LAVA') {
-        // Draw lava bubbles
-        for (let i = 0; i < 3; i++) {
-          const bubbleX = hazard.x - cameraX + Math.random() * hazard.width;
-          const bubbleY = hazard.y + Math.random() * hazard.height;
-          ctx.beginPath();
-          ctx.arc(bubbleX, bubbleY, 2, 0, Math.PI * 2);
-          ctx.fillStyle = '#ff6b6b';
-          ctx.fill();
-        }
-      } else if (hazard.type === 'WATER') {
-        // Draw water ripples
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1;
-        for (let i = 0; i < 2; i++) {
-          const rippleX = hazard.x - cameraX + Math.random() * hazard.width;
-          ctx.beginPath();
-          ctx.arc(rippleX, hazard.y + hazard.height/2, 5, 0, Math.PI * 2);
-          ctx.stroke();
+      // Change direction at boundaries
+      if (zombie.x <= zombie.startX || zombie.x >= zombie.endX) {
+        zombie.direction *= -1;
+      }
+      
+      // Draw zombie
+      ctx.drawImage(sprites.zombie, zombie.x - cameraX, zombie.y, zombie.width, zombie.height);
+      
+      // Check collision with player
+      if (player.x < zombie.x + zombie.width &&
+          player.x + player.width > zombie.x &&
+          player.y < zombie.y + zombie.height &&
+          player.y + player.height > zombie.y) {
+        if (!player.invulnerable) {
+          player.health -= 20;
+          player.invulnerable = true;
+          zombieSound.play().catch(error => console.error('Zombie sound failed to play:', error));
+          setTimeout(() => player.invulnerable = false, 1000);
         }
       }
     });
 
-    // Draw player
-    ctx.save();
-    if (!player.facingRight) {
-      ctx.translate(player.x - cameraX + player.width, player.y);
-      ctx.scale(-1, 1);
-      ctx.drawImage(sprites.player, 0, 0, player.width, player.height);
-    } else {
-      ctx.drawImage(sprites.player, player.x - cameraX, player.y, player.width, player.height);
-    }
-    ctx.restore();
-
-    // Draw health bar
-    const healthBarWidth = 50;
-    const healthBarHeight = 5;
-    const healthPercentage = player.health / 100;
-    ctx.fillStyle = '#e74c3c';
-    ctx.fillRect(player.x - cameraX, player.y - 10, healthBarWidth, healthBarHeight);
-    ctx.fillStyle = '#2ecc71';
-    ctx.fillRect(player.x - cameraX, player.y - 10, healthBarWidth * healthPercentage, healthBarHeight);
-
-    // Draw portal
-    ctx.drawImage(sprites.portal, portal.x - cameraX, portal.y, 30, 30);
-
-    // Draw spikes
-    spikes.forEach(spike => {
-      ctx.drawImage(sprites.spike, spike.x - cameraX, spike.y, spike.width, spike.height);
-    });
-
-    // Check collisions with hazards
-    hazards.forEach(hazard => {
-      if (player.x < hazard.x + hazard.width &&
-          player.x + player.width > hazard.x &&
-          player.y < hazard.y + hazard.height &&
-          player.y + player.height > hazard.y) {
-        handleHazardEffect(hazard, player);
-      }
-    });
-
-    // Check if player is dead
-    if (player.health <= 0) {
-      gameLost = true;
-    }
-
-    // Check win condition
-    if (player.x + player.width >= portal.x &&
-        player.x <= portal.x + 30 &&
-        player.y + player.height >= portal.y &&
-        player.y <= portal.y + 30) {
-      if (!gameWon) {
-        gameWon = true;
-        stopBackgroundMusic();
-        updateScore('levelComplete');
-        const winSound = new Audio('audio/win.wav');
-        winSound.volume = 0.7; // Increased from 0.3 to 0.7 for louder win sound
-        winSound.play().catch(error => console.error('Win sound failed to play:', error));
+    // Draw and handle hazards
+    if (currentLevelData && currentLevelData.hazards) {
+      currentLevelData.hazards.forEach(hazard => {
+        // Draw hazard
+        if (hazard.type === 'WATER') {
+          ctx.fillStyle = '#4a90e2';
+        } else if (hazard.type === 'LAVA') {
+          ctx.fillStyle = '#e74c3c';
+        }
+    ctx.fillRect(hazard.x - cameraX, hazard.y, hazard.width, hazard.height);
+    
+        // Check collision
+        if (player.x < hazard.x + hazard.width &&
+            player.x + player.width > hazard.x &&
+            player.y < hazard.y + hazard.height &&
+            player.y + player.height > hazard.y) {
+          
+          if (!player.invulnerable) {
+            if (hazard.type === 'WATER') {
+              player.velocityY += player.gravity * 0.5;
+              player.health -= 10;
+            } else if (hazard.type === 'LAVA') {
+              player.velocityY = -10;
+              player.health -= 20;
+            }
+            
+            player.invulnerable = true;
+            setTimeout(() => player.invulnerable = false, 1000);
+            
+            // Visual feedback
+            ctx.fillStyle = hazard.type === 'WATER' ? 'rgba(0, 0, 255, 0.3)' : 'rgba(255, 0, 0, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
     }
+  });
+    }
 
-    // Draw score
-    drawScore();
+  // Draw player
+  ctx.save();
+  if (!player.facingRight) {
+    ctx.translate(player.x - cameraX + player.width, player.y);
+    ctx.scale(-1, 1);
+    ctx.drawImage(sprites.player, 0, 0, player.width, player.height);
+  } else {
+    ctx.drawImage(sprites.player, player.x - cameraX, player.y, player.width, player.height);
+  }
+  ctx.restore();
 
-    if (gameWon) {
-      ctx.fillStyle = 'black';
-      ctx.font = '36px sans-serif';
-      ctx.fillText('Level Complete! Press Enter.', 150, 200);
-      ctx.font = '24px sans-serif';
-      ctx.fillText(`Final Score: ${Math.floor(score.points)}`, 150, 240);
-      ctx.fillText(`Max Combo: ${score.maxCombo}x`, 150, 280);
-      
-      // Add score to high scores
-      highScores.addScore(score.points, currentLevel);
-      
-      // Show high score table
-      drawHighScoreTable();
-      
-      // Show restart button
-      document.getElementById('restartButton').style.display = 'block';
-      document.getElementById('restartButton').textContent = 'Next Level';
-    } else if (gameLost) {
-      ctx.fillStyle = 'black';
-      ctx.font = '36px sans-serif';
-      ctx.fillText('You Lost! Press Enter to Retry.', 120, 200);
-      ctx.font = '24px sans-serif';
-      ctx.fillText(`Score: ${Math.floor(score.points)}`, 150, 240);
-      
-      // Show high score table
-      drawHighScoreTable();
-      
-      // Show restart button
-      document.getElementById('restartButton').style.display = 'block';
-      document.getElementById('restartButton').textContent = 'Try Again';
-    } else {
-      requestAnimationFrame(gameLoop);
+  // Draw health bar
+  const healthBarWidth = 50;
+  const healthBarHeight = 5;
+  const healthPercentage = player.health / 100;
+  ctx.fillStyle = '#e74c3c';
+  ctx.fillRect(player.x - cameraX, player.y - 10, healthBarWidth, healthBarHeight);
+  ctx.fillStyle = '#2ecc71';
+  ctx.fillRect(player.x - cameraX, player.y - 10, healthBarWidth * healthPercentage, healthBarHeight);
+
+  // Draw portal
+  ctx.drawImage(sprites.portal, portal.x - cameraX, portal.y, 30, 30);
+
+  // Draw platforms
+  if (platforms && platforms.length > 0) {
+    platforms.forEach(platform => {
+      if (sprites.platform.complete) {
+        ctx.drawImage(sprites.platform, platform.x - cameraX, platform.y, platform.width, platform.height);
+      } else {
+        // Fallback: draw a brown rectangle if sprite isn't loaded
+        ctx.fillStyle = '#8B4513';
+        ctx.fillRect(platform.x - cameraX, platform.y, platform.width, platform.height);
+      }
+    });
+  }
+
+  // Draw bouncing platforms
+  if (bouncingPlatforms && bouncingPlatforms.length > 0) {
+    bouncingPlatforms.forEach(platform => {
+      if (sprites.bouncingPlatform.complete) {
+        ctx.drawImage(sprites.bouncingPlatform, platform.x - cameraX, platform.y, platform.width, platform.height);
+      } else {
+        // Fallback: draw a green rectangle if sprite isn't loaded
+        ctx.fillStyle = '#4CAF50';
+        ctx.fillRect(platform.x - cameraX, platform.y, platform.width, platform.height);
+      }
+    });
+  }
+
+  // Draw spikes
+  spikes.forEach(spike => {
+    ctx.drawImage(sprites.spike, spike.x - cameraX, spike.y, spike.width, spike.height);
+  });
+
+  // Check win condition
+  if (player.x + player.width >= portal.x &&
+      player.x <= portal.x + 30 &&
+      player.y + player.height >= portal.y &&
+      player.y <= portal.y + 30) {
+    if (!gameWon) {
+      gameWon = true;
+      stopBackgroundMusic();
+      updateScore('levelComplete');
+      const winSound = new Audio('audio/win.wav');
+      winSound.volume = 0.7; // Increased from 0.3 to 0.7 for louder win sound
+      winSound.play().catch(error => console.error('Win sound failed to play:', error));
+    }
+  }
+
+  // Draw score
+  drawScore();
+
+  if (gameWon) {
+    ctx.fillStyle = 'black';
+    ctx.font = '36px sans-serif';
+    ctx.fillText('Level Complete! Press Enter.', 150, 200);
+    ctx.font = '24px sans-serif';
+    ctx.fillText(`Final Score: ${Math.floor(score.points)}`, 150, 240);
+    ctx.fillText(`Max Combo: ${score.maxCombo}x`, 150, 280);
+    
+    // Add score to high scores
+    highScores.addScore(score.points, currentLevel);
+    
+    // Show high score table
+    drawHighScoreTable();
+    
+    // Show restart button
+    document.getElementById('restartButton').style.display = 'block';
+    document.getElementById('restartButton').textContent = 'Next Level';
+  } else if (gameLost) {
+    ctx.fillStyle = 'black';
+    ctx.font = '36px sans-serif';
+    ctx.fillText('You Lost! Press Enter to Retry.', 120, 200);
+    ctx.font = '24px sans-serif';
+    ctx.fillText(`Score: ${Math.floor(score.points)}`, 150, 240);
+    
+    // Show high score table
+    drawHighScoreTable();
+    
+    // Show restart button
+    document.getElementById('restartButton').style.display = 'block';
+    document.getElementById('restartButton').textContent = 'Try Again';
+  } else {
+    requestAnimationFrame(gameLoop);
     }
   }
 }
@@ -861,6 +1032,28 @@ function setupTouchControls() {
 function setupKeyboardControls() {
   window.addEventListener('keydown', (e) => {
     keys[e.key] = true;
+    
+    // Handle Enter key for restarting after win/loss
+    if (e.key === 'Enter') {
+      if (gameWon || gameLost) {
+        const restartButton = document.getElementById('restartButton');
+        if (restartButton) {
+          if (gameWon) {
+            currentLevel++;
+            if (currentLevel >= levels.length) {
+              currentLevel = 0; // Loop back to first level
+            }
+          }
+          resetPlayer();
+          resetScore();
+          gameWon = false;
+          gameLost = false;
+          restartButton.style.display = 'none';
+          playBackgroundMusic();
+          requestAnimationFrame(gameLoop);
+        }
+      }
+    }
   });
   
   window.addEventListener('keyup', (e) => {
@@ -987,7 +1180,7 @@ function handleCollectible(collectible) {
   const collectibleType = COLLECTIBLE_TYPES[collectible.type];
   if (!collectible.collected) {
     collectible.collected = true;
-    updateScore('collectible', collectibleType.points);
+    updateScore('collectible', SCORE_VALUES[collectible.type]);
     collectSound.play().catch(error => console.error('Collect sound failed to play:', error));
     
     if (collectibleType.unlocksSecret) {
