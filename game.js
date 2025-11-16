@@ -659,7 +659,7 @@ function gameLoop() {
     if (keys['ArrowUp'] && player.grounded) {
       player.velocityY = player.jumpForce;
       player.grounded = false;
-      updateScore('jump');
+      // Jumping no longer gives points to prevent score farming
       const jumpSound = new Audio('audio/jump.wav');
       jumpSound.volume = 0.7;
       jumpSound.play().catch(error => console.error('Jump sound failed to play:', error));
