@@ -782,6 +782,18 @@ const currency = {
     this.tempGems += amount;
   },
   
+  // Add coins directly to permanent currency (for shop purchases, chests, etc.)
+  addPermanentCoins(amount) {
+    this.coins += amount;
+    this.save();
+  },
+  
+  // Add gems directly to permanent currency (for shop purchases, chests, etc.)
+  addPermanentGems(amount) {
+    this.gems += amount;
+    this.save();
+  },
+  
   // Save temporary currency to permanent currency (called on level complete)
   saveTemporary() {
     this.coins += this.tempCoins;
@@ -1766,9 +1778,9 @@ const shop = {
       }
     }
     
-    // Add rewards
-    currency.addCoins(rewards.coins);
-    currency.addGems(rewards.gems);
+    // Add rewards directly to permanent currency (chest rewards are immediate)
+    currency.addPermanentCoins(rewards.coins);
+    currency.addPermanentGems(rewards.gems);
     
     return { success: true, rewards };
   }
