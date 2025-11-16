@@ -1745,6 +1745,17 @@ const shop = {
         gems: [5, 15],
         skins: ['gold', 'purple']
       }
+    },
+    {
+      id: 'heroic',
+      name: 'Heroic Chest',
+      costCoins: 500,
+      costGems: 25,
+      rewards: {
+        coins: [150, 300],
+        gems: [20, 50],
+        skins: ['red', 'green', 'gold', 'purple']
+      }
     }
   ],
   
@@ -1767,8 +1778,9 @@ const shop = {
       skin: null
     };
     
-    // Chance for skin reward
-    if (chest.rewards.skins.length > 0 && Math.random() < 0.3) {
+    // Chance for skin reward (higher chance for heroic chest)
+    const skinChance = chest.id === 'heroic' ? 0.8 : 0.3;
+    if (chest.rewards.skins.length > 0 && Math.random() < skinChance) {
       const availableSkins = chest.rewards.skins.filter(skinId => !characterSkins[skinId].unlocked);
       if (availableSkins.length > 0) {
         const randomSkin = availableSkins[Math.floor(Math.random() * availableSkins.length)];
