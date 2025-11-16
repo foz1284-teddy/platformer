@@ -439,6 +439,323 @@ const levels = [
         ]
       }
     ]
+  },
+  {
+    portal: { x: 3000, y: 350 },
+    spikes: [
+      { x: 400, y: 340, width: 20, height: 40 },
+      { x: 600, y: 340, width: 20, height: 40 },
+      { x: 800, y: 340, width: 20, height: 40 },
+      { x: 1000, y: 340, width: 20, height: 40 },
+      { x: 1200, y: 340, width: 20, height: 40 },
+      { x: 1400, y: 340, width: 20, height: 40 },
+      { x: 1600, y: 340, width: 20, height: 40 },
+      { x: 1800, y: 340, width: 20, height: 40 },
+      { x: 2000, y: 340, width: 20, height: 40 },
+      { x: 2200, y: 340, width: 20, height: 40 },
+      { x: 2400, y: 340, width: 20, height: 40 },
+      { x: 2600, y: 340, width: 20, height: 40 },
+      { x: 2800, y: 340, width: 20, height: 40 }
+    ],
+    hazards: [
+      { x: 500, y: 379, width: 80, height: 20, type: 'LAVA' },
+      { x: 700, y: 379, width: 80, height: 20, type: 'WATER' },
+      { x: 900, y: 379, width: 80, height: 20, type: 'LAVA' },
+      { x: 1100, y: 379, width: 80, height: 20, type: 'WATER' },
+      { x: 1300, y: 379, width: 80, height: 20, type: 'LAVA' },
+      { x: 1500, y: 379, width: 80, height: 20, type: 'WATER' },
+      { x: 1700, y: 379, width: 80, height: 20, type: 'LAVA' },
+      { x: 1900, y: 379, width: 80, height: 20, type: 'WATER' },
+      { x: 2100, y: 379, width: 80, height: 20, type: 'LAVA' },
+      { x: 2300, y: 379, width: 80, height: 20, type: 'WATER' },
+      { x: 2500, y: 379, width: 80, height: 20, type: 'LAVA' },
+      { x: 2700, y: 379, width: 80, height: 20, type: 'WATER' }
+    ],
+    zombies: [
+      { x: 300, y: 350, width: 30, height: 30, speed: 2.2, direction: 1, startX: 300, endX: 500 },
+      { x: 600, y: 350, width: 30, height: 30, speed: 2.2, direction: 1, startX: 600, endX: 800 },
+      { x: 900, y: 350, width: 30, height: 30, speed: 2.2, direction: 1, startX: 900, endX: 1100 },
+      { x: 1200, y: 350, width: 30, height: 30, speed: 2.2, direction: 1, startX: 1200, endX: 1400 },
+      { x: 1500, y: 350, width: 30, height: 30, speed: 2.2, direction: 1, startX: 1500, endX: 1700 },
+      { x: 1800, y: 350, width: 30, height: 30, speed: 2.2, direction: 1, startX: 1800, endX: 2000 },
+      { x: 2100, y: 350, width: 30, height: 30, speed: 2.2, direction: 1, startX: 2100, endX: 2300 },
+      { x: 2400, y: 350, width: 30, height: 30, speed: 2.2, direction: 1, startX: 2400, endX: 2600 }
+    ],
+    platforms: [
+      { x: 200, y: 300, width: 100, height: 20 },
+      { x: 450, y: 260, width: 80, height: 20 },
+      { x: 700, y: 320, width: 60, height: 20 },
+      { x: 950, y: 280, width: 100, height: 20 },
+      { x: 1200, y: 240, width: 80, height: 20 },
+      { x: 1450, y: 320, width: 60, height: 20 },
+      { x: 1700, y: 280, width: 100, height: 20 },
+      { x: 1950, y: 240, width: 80, height: 20 },
+      { x: 2200, y: 320, width: 60, height: 20 },
+      { x: 2450, y: 280, width: 100, height: 20 },
+      { x: 2700, y: 240, width: 80, height: 20 }
+    ],
+    bouncingPlatforms: [
+      { x: 350, y: 180, width: 100, height: 20, bounceForce: -20 },
+      { x: 750, y: 160, width: 80, height: 20, bounceForce: -22 },
+      { x: 1150, y: 140, width: 100, height: 20, bounceForce: -24 },
+      { x: 1550, y: 120, width: 80, height: 20, bounceForce: -26 },
+      { x: 1950, y: 100, width: 100, height: 20, bounceForce: -28 },
+      { x: 2350, y: 80, width: 80, height: 20, bounceForce: -30 }
+    ],
+    collectibles: [
+      { x: 300, y: 260, type: 'COIN' },
+      { x: 500, y: 220, type: 'COIN' },
+      { x: 700, y: 280, type: 'COIN' },
+      { x: 900, y: 240, type: 'GEM' },
+      { x: 1200, y: 200, type: 'COIN' },
+      { x: 1500, y: 240, type: 'GEM' },
+      { x: 1800, y: 200, type: 'KEY' },
+      { x: 2100, y: 240, type: 'GEM' },
+      { x: 2400, y: 200, type: 'COIN' },
+      { x: 2700, y: 200, type: 'GEM' }
+    ],
+    secretAreas: [
+      {
+        x: 1600,
+        y: 50,
+        width: 300,
+        height: 300,
+        requiresKey: true,
+        collectibles: [
+          { x: 1700, y: 100, type: 'GEM' },
+          { x: 1750, y: 100, type: 'GEM' },
+          { x: 1800, y: 100, type: 'GEM' },
+          { x: 1850, y: 100, type: 'GEM' },
+          { x: 1725, y: 150, type: 'COIN' },
+          { x: 1775, y: 150, type: 'COIN' },
+          { x: 1825, y: 150, type: 'COIN' }
+        ]
+      }
+    ]
+  },
+  {
+    portal: { x: 3500, y: 350 },
+    spikes: [
+      { x: 300, y: 340, width: 20, height: 40 },
+      { x: 500, y: 340, width: 20, height: 40 },
+      { x: 700, y: 340, width: 20, height: 40 },
+      { x: 900, y: 340, width: 20, height: 40 },
+      { x: 1100, y: 340, width: 20, height: 40 },
+      { x: 1300, y: 340, width: 20, height: 40 },
+      { x: 1500, y: 340, width: 20, height: 40 },
+      { x: 1700, y: 340, width: 20, height: 40 },
+      { x: 1900, y: 340, width: 20, height: 40 },
+      { x: 2100, y: 340, width: 20, height: 40 },
+      { x: 2300, y: 340, width: 20, height: 40 },
+      { x: 2500, y: 340, width: 20, height: 40 },
+      { x: 2700, y: 340, width: 20, height: 40 },
+      { x: 2900, y: 340, width: 20, height: 40 },
+      { x: 3100, y: 340, width: 20, height: 40 },
+      { x: 3300, y: 340, width: 20, height: 40 }
+    ],
+    hazards: [
+      { x: 400, y: 379, width: 100, height: 20, type: 'LAVA' },
+      { x: 600, y: 379, width: 100, height: 20, type: 'WATER' },
+      { x: 800, y: 379, width: 100, height: 20, type: 'LAVA' },
+      { x: 1000, y: 379, width: 100, height: 20, type: 'WATER' },
+      { x: 1200, y: 379, width: 100, height: 20, type: 'LAVA' },
+      { x: 1400, y: 379, width: 100, height: 20, type: 'WATER' },
+      { x: 1600, y: 379, width: 100, height: 20, type: 'LAVA' },
+      { x: 1800, y: 379, width: 100, height: 20, type: 'WATER' },
+      { x: 2000, y: 379, width: 100, height: 20, type: 'LAVA' },
+      { x: 2200, y: 379, width: 100, height: 20, type: 'WATER' },
+      { x: 2400, y: 379, width: 100, height: 20, type: 'LAVA' },
+      { x: 2600, y: 379, width: 100, height: 20, type: 'WATER' },
+      { x: 2800, y: 379, width: 100, height: 20, type: 'LAVA' },
+      { x: 3000, y: 379, width: 100, height: 20, type: 'WATER' },
+      { x: 3200, y: 379, width: 100, height: 20, type: 'LAVA' }
+    ],
+    zombies: [
+      { x: 250, y: 350, width: 30, height: 30, speed: 2.5, direction: 1, startX: 250, endX: 450 },
+      { x: 550, y: 350, width: 30, height: 30, speed: 2.5, direction: 1, startX: 550, endX: 750 },
+      { x: 850, y: 350, width: 30, height: 30, speed: 2.5, direction: 1, startX: 850, endX: 1050 },
+      { x: 1150, y: 350, width: 30, height: 30, speed: 2.5, direction: 1, startX: 1150, endX: 1350 },
+      { x: 1450, y: 350, width: 30, height: 30, speed: 2.5, direction: 1, startX: 1450, endX: 1650 },
+      { x: 1750, y: 350, width: 30, height: 30, speed: 2.5, direction: 1, startX: 1750, endX: 1950 },
+      { x: 2050, y: 350, width: 30, height: 30, speed: 2.5, direction: 1, startX: 2050, endX: 2250 },
+      { x: 2350, y: 350, width: 30, height: 30, speed: 2.5, direction: 1, startX: 2350, endX: 2550 },
+      { x: 2650, y: 350, width: 30, height: 30, speed: 2.5, direction: 1, startX: 2650, endX: 2850 },
+      { x: 2950, y: 350, width: 30, height: 30, speed: 2.5, direction: 1, startX: 2950, endX: 3150 }
+    ],
+    platforms: [
+      { x: 150, y: 300, width: 120, height: 20 },
+      { x: 400, y: 260, width: 100, height: 20 },
+      { x: 700, y: 320, width: 80, height: 20 },
+      { x: 1000, y: 280, width: 120, height: 20 },
+      { x: 1300, y: 240, width: 100, height: 20 },
+      { x: 1600, y: 320, width: 80, height: 20 },
+      { x: 1900, y: 280, width: 120, height: 20 },
+      { x: 2200, y: 240, width: 100, height: 20 },
+      { x: 2500, y: 320, width: 80, height: 20 },
+      { x: 2800, y: 280, width: 120, height: 20 },
+      { x: 3100, y: 240, width: 100, height: 20 },
+      { x: 3400, y: 300, width: 80, height: 20 }
+    ],
+    bouncingPlatforms: [
+      { x: 300, y: 180, width: 100, height: 20, bounceForce: -22 },
+      { x: 750, y: 160, width: 80, height: 20, bounceForce: -24 },
+      { x: 1200, y: 140, width: 100, height: 20, bounceForce: -26 },
+      { x: 1650, y: 120, width: 80, height: 20, bounceForce: -28 },
+      { x: 2100, y: 100, width: 100, height: 20, bounceForce: -30 },
+      { x: 2550, y: 80, width: 80, height: 20, bounceForce: -32 },
+      { x: 3000, y: 60, width: 100, height: 20, bounceForce: -34 }
+    ],
+    collectibles: [
+      { x: 300, y: 260, type: 'COIN' },
+      { x: 500, y: 220, type: 'COIN' },
+      { x: 700, y: 280, type: 'COIN' },
+      { x: 900, y: 240, type: 'GEM' },
+      { x: 1200, y: 200, type: 'COIN' },
+      { x: 1500, y: 240, type: 'GEM' },
+      { x: 1800, y: 200, type: 'COIN' },
+      { x: 2100, y: 240, type: 'GEM' },
+      { x: 2400, y: 200, type: 'KEY' },
+      { x: 2700, y: 240, type: 'GEM' },
+      { x: 3000, y: 200, type: 'COIN' },
+      { x: 3300, y: 200, type: 'GEM' }
+    ],
+    secretAreas: [
+      {
+        x: 2000,
+        y: 50,
+        width: 350,
+        height: 350,
+        requiresKey: true,
+        collectibles: [
+          { x: 2100, y: 100, type: 'GEM' },
+          { x: 2150, y: 100, type: 'GEM' },
+          { x: 2200, y: 100, type: 'GEM' },
+          { x: 2250, y: 100, type: 'GEM' },
+          { x: 2125, y: 150, type: 'COIN' },
+          { x: 2175, y: 150, type: 'COIN' },
+          { x: 2225, y: 150, type: 'COIN' },
+          { x: 2275, y: 150, type: 'COIN' }
+        ]
+      }
+    ]
+  },
+  {
+    portal: { x: 4000, y: 350 },
+    spikes: [
+      { x: 400, y: 340, width: 20, height: 40 },
+      { x: 600, y: 340, width: 20, height: 40 },
+      { x: 800, y: 340, width: 20, height: 40 },
+      { x: 1000, y: 340, width: 20, height: 40 },
+      { x: 1200, y: 340, width: 20, height: 40 },
+      { x: 1400, y: 340, width: 20, height: 40 },
+      { x: 1600, y: 340, width: 20, height: 40 },
+      { x: 1800, y: 340, width: 20, height: 40 },
+      { x: 2000, y: 340, width: 20, height: 40 },
+      { x: 2200, y: 340, width: 20, height: 40 },
+      { x: 2400, y: 340, width: 20, height: 40 },
+      { x: 2600, y: 340, width: 20, height: 40 },
+      { x: 2800, y: 340, width: 20, height: 40 },
+      { x: 3000, y: 340, width: 20, height: 40 },
+      { x: 3200, y: 340, width: 20, height: 40 },
+      { x: 3400, y: 340, width: 20, height: 40 },
+      { x: 3600, y: 340, width: 20, height: 40 },
+      { x: 3800, y: 340, width: 20, height: 40 }
+    ],
+    hazards: [
+      { x: 500, y: 379, width: 120, height: 20, type: 'LAVA' },
+      { x: 700, y: 379, width: 120, height: 20, type: 'WATER' },
+      { x: 900, y: 379, width: 120, height: 20, type: 'LAVA' },
+      { x: 1100, y: 379, width: 120, height: 20, type: 'WATER' },
+      { x: 1300, y: 379, width: 120, height: 20, type: 'LAVA' },
+      { x: 1500, y: 379, width: 120, height: 20, type: 'WATER' },
+      { x: 1700, y: 379, width: 120, height: 20, type: 'LAVA' },
+      { x: 1900, y: 379, width: 120, height: 20, type: 'WATER' },
+      { x: 2100, y: 379, width: 120, height: 20, type: 'LAVA' },
+      { x: 2300, y: 379, width: 120, height: 20, type: 'WATER' },
+      { x: 2500, y: 379, width: 120, height: 20, type: 'LAVA' },
+      { x: 2700, y: 379, width: 120, height: 20, type: 'WATER' },
+      { x: 2900, y: 379, width: 120, height: 20, type: 'LAVA' },
+      { x: 3100, y: 379, width: 120, height: 20, type: 'WATER' },
+      { x: 3300, y: 379, width: 120, height: 20, type: 'LAVA' },
+      { x: 3500, y: 379, width: 120, height: 20, type: 'WATER' },
+      { x: 3700, y: 379, width: 120, height: 20, type: 'LAVA' }
+    ],
+    zombies: [
+      { x: 300, y: 350, width: 30, height: 30, speed: 2.8, direction: 1, startX: 300, endX: 500 },
+      { x: 600, y: 350, width: 30, height: 30, speed: 2.8, direction: 1, startX: 600, endX: 800 },
+      { x: 900, y: 350, width: 30, height: 30, speed: 2.8, direction: 1, startX: 900, endX: 1100 },
+      { x: 1200, y: 350, width: 30, height: 30, speed: 2.8, direction: 1, startX: 1200, endX: 1400 },
+      { x: 1500, y: 350, width: 30, height: 30, speed: 2.8, direction: 1, startX: 1500, endX: 1700 },
+      { x: 1800, y: 350, width: 30, height: 30, speed: 2.8, direction: 1, startX: 1800, endX: 2000 },
+      { x: 2100, y: 350, width: 30, height: 30, speed: 2.8, direction: 1, startX: 2100, endX: 2300 },
+      { x: 2400, y: 350, width: 30, height: 30, speed: 2.8, direction: 1, startX: 2400, endX: 2600 },
+      { x: 2700, y: 350, width: 30, height: 30, speed: 2.8, direction: 1, startX: 2700, endX: 2900 },
+      { x: 3000, y: 350, width: 30, height: 30, speed: 2.8, direction: 1, startX: 3000, endX: 3200 },
+      { x: 3300, y: 350, width: 30, height: 30, speed: 2.8, direction: 1, startX: 3300, endX: 3500 },
+      { x: 3600, y: 350, width: 30, height: 30, speed: 2.8, direction: 1, startX: 3600, endX: 3800 }
+    ],
+    platforms: [
+      { x: 200, y: 300, width: 120, height: 20 },
+      { x: 450, y: 260, width: 100, height: 20 },
+      { x: 750, y: 320, width: 80, height: 20 },
+      { x: 1050, y: 280, width: 120, height: 20 },
+      { x: 1350, y: 240, width: 100, height: 20 },
+      { x: 1650, y: 320, width: 80, height: 20 },
+      { x: 1950, y: 280, width: 120, height: 20 },
+      { x: 2250, y: 240, width: 100, height: 20 },
+      { x: 2550, y: 320, width: 80, height: 20 },
+      { x: 2850, y: 280, width: 120, height: 20 },
+      { x: 3150, y: 240, width: 100, height: 20 },
+      { x: 3450, y: 320, width: 80, height: 20 },
+      { x: 3750, y: 300, width: 100, height: 20 }
+    ],
+    bouncingPlatforms: [
+      { x: 350, y: 180, width: 100, height: 20, bounceForce: -24 },
+      { x: 800, y: 160, width: 80, height: 20, bounceForce: -26 },
+      { x: 1250, y: 140, width: 100, height: 20, bounceForce: -28 },
+      { x: 1700, y: 120, width: 80, height: 20, bounceForce: -30 },
+      { x: 2150, y: 100, width: 100, height: 20, bounceForce: -32 },
+      { x: 2600, y: 80, width: 80, height: 20, bounceForce: -34 },
+      { x: 3050, y: 60, width: 100, height: 20, bounceForce: -36 },
+      { x: 3500, y: 40, width: 80, height: 20, bounceForce: -38 }
+    ],
+    collectibles: [
+      { x: 300, y: 260, type: 'COIN' },
+      { x: 500, y: 220, type: 'COIN' },
+      { x: 700, y: 280, type: 'COIN' },
+      { x: 900, y: 240, type: 'GEM' },
+      { x: 1200, y: 200, type: 'COIN' },
+      { x: 1500, y: 240, type: 'GEM' },
+      { x: 1800, y: 200, type: 'COIN' },
+      { x: 2100, y: 240, type: 'GEM' },
+      { x: 2400, y: 200, type: 'COIN' },
+      { x: 2700, y: 240, type: 'GEM' },
+      { x: 3000, y: 200, type: 'KEY' },
+      { x: 3300, y: 240, type: 'GEM' },
+      { x: 3600, y: 200, type: 'COIN' },
+      { x: 3900, y: 200, type: 'GEM' }
+    ],
+    secretAreas: [
+      {
+        x: 2500,
+        y: 50,
+        width: 400,
+        height: 400,
+        requiresKey: true,
+        collectibles: [
+          { x: 2600, y: 100, type: 'GEM' },
+          { x: 2650, y: 100, type: 'GEM' },
+          { x: 2700, y: 100, type: 'GEM' },
+          { x: 2750, y: 100, type: 'GEM' },
+          { x: 2800, y: 100, type: 'GEM' },
+          { x: 2625, y: 150, type: 'COIN' },
+          { x: 2675, y: 150, type: 'COIN' },
+          { x: 2725, y: 150, type: 'COIN' },
+          { x: 2775, y: 150, type: 'COIN' },
+          { x: 2825, y: 150, type: 'COIN' }
+        ]
+      }
+    ]
   }
 ];
 
