@@ -820,6 +820,14 @@ const currency = {
     localStorage.setItem('gems', this.gems);
   },
   
+  // Reload currency from localStorage (called when starting new level)
+  reload() {
+    this.coins = parseInt(localStorage.getItem('coins')) || 0;
+    this.gems = parseInt(localStorage.getItem('gems')) || 0;
+    this.tempCoins = 0;
+    this.tempGems = 0;
+  },
+  
   // Get total coins/gems including temporary
   getTotalCoins() {
     return this.coins + this.tempCoins;
@@ -1061,9 +1069,15 @@ function setupRestartButton() {
       if (currentLevel >= levels.length) {
         currentLevel = 0; // Loop back to first level
       }
+      // Reload currency from localStorage when starting new level
+      currency.reload();
+      // Reset collectibles for the new level
+      resetCollectibles();
     } else {
       // Reset temporary currency if restarting after failure
       currency.resetTemporary();
+      // Reset collectibles for retry
+      resetCollectibles();
     }
     resetPlayer();
     resetScore();
@@ -1495,9 +1509,15 @@ function setupKeyboardControls() {
             if (currentLevel >= levels.length) {
               currentLevel = 0; // Loop back to first level
             }
+            // Reload currency from localStorage when starting new level
+            currency.reload();
+            // Reset collectibles for the new level
+            resetCollectibles();
           } else {
             // Reset temporary currency if restarting after failure
             currency.resetTemporary();
+            // Reset collectibles for retry
+            resetCollectibles();
           }
           resetPlayer();
           resetScore();
@@ -1615,6 +1635,29 @@ function toggleHighScores() {
     const overlay = document.getElementById('highScoresOverlay');
     if (overlay) {
       overlay.remove();
+    }
+  }
+}
+
+// Reset collectibles for current level
+function resetCollectibles() {
+  const levelData = levels[currentLevel];
+  if (levelData) {
+    // Reset regular collectibles
+    if (levelData.collectibles) {
+      levelData.collectibles.forEach(collectible => {
+        collectible.collected = false;
+      });
+    }
+    // Reset secret area collectibles
+    if (levelData.secretAreas) {
+      levelData.secretAreas.forEach(area => {
+        if (area.collectibles) {
+          area.collectibles.forEach(collectible => {
+            collectible.collected = false;
+          });
+        }
+      });
     }
   }
 }
