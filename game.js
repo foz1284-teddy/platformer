@@ -451,15 +451,33 @@ let gameLost = false;
 const currency = {
   coins: parseInt(localStorage.getItem('coins')) || 0,
   gems: parseInt(localStorage.getItem('gems')) || 0,
+  // Temporary currency collected during current level attempt
+  tempCoins: 0,
+  tempGems: 0,
   
   addCoins(amount) {
-    this.coins += amount;
-    this.save();
+    // Add to temporary currency (not saved until level complete)
+    this.tempCoins += amount;
   },
   
   addGems(amount) {
-    this.gems += amount;
+    // Add to temporary currency (not saved until level complete)
+    this.tempGems += amount;
+  },
+  
+  // Save temporary currency to permanent currency (called on level complete)
+  saveTemporary() {
+    this.coins += this.tempCoins;
+    this.gems += this.tempGems;
+    this.tempCoins = 0;
+    this.tempGems = 0;
     this.save();
+  },
+  
+  // Reset temporary currency (called on level failure)
+  resetTemporary() {
+    this.tempCoins = 0;
+    this.tempGems = 0;
   },
   
   spendCoins(amount) {
@@ -483,6 +501,15 @@ const currency = {
   save() {
     localStorage.setItem('coins', this.coins);
     localStorage.setItem('gems', this.gems);
+  },
+  
+  // Get total coins/gems including temporary
+  getTotalCoins() {
+    return this.coins + this.tempCoins;
+  },
+  
+  getTotalGems() {
+    return this.gems + this.tempGems;
   }
 };
 
@@ -537,8 +564,8 @@ function drawScore() {
   ctx.fillText(`Score: ${Math.floor(score.points)}`, 20, 30);
   ctx.fillText(`High Score: ${Math.floor(score.highScore)}`, 20, 60);
   ctx.fillText(`Combo: ${score.combo}x`, 20, 90);
-  ctx.fillText(`Coins: ${currency.coins}`, 20, 120);
-  ctx.fillText(`Gems: ${currency.gems}`, 20, 150);
+  ctx.fillText(`Coins: ${currency.getTotalCoins()}`, 20, 120);
+  ctx.fillText(`Gems: ${currency.getTotalGems()}`, 20, 150);
   if (player.hasKey) {
     ctx.fillText('Key: Yes', 20, 180);
   }
@@ -717,6 +744,9 @@ function setupRestartButton() {
       if (currentLevel >= levels.length) {
         currentLevel = 0; // Loop back to first level
       }
+    } else {
+      // Reset temporary currency if restarting after failure
+      currency.resetTemporary();
     }
     resetPlayer();
     resetScore();
@@ -858,6 +888,8 @@ function gameLoop() {
         // Player hit a spike
         gameLost = true;
         stopBackgroundMusic();
+        // Reset temporary currency on level failure
+        currency.resetTemporary();
         const loseSound = new Audio('audio/lose.wav');
         loseSound.volume = 0.7;
         loseSound.play().catch(error => console.error('Lose sound failed to play:', error));
@@ -1040,6 +1072,8 @@ function gameLoop() {
       gameWon = true;
       stopBackgroundMusic();
       updateScore('levelComplete');
+      // Save temporary currency to permanent currency on level completion
+      currency.saveTemporary();
       const winSound = new Audio('audio/win.wav');
       winSound.volume = 0.7; // Increased from 0.3 to 0.7 for louder win sound
       winSound.play().catch(error => console.error('Win sound failed to play:', error));
@@ -1144,6 +1178,9 @@ function setupKeyboardControls() {
             if (currentLevel >= levels.length) {
               currentLevel = 0; // Loop back to first level
             }
+          } else {
+            // Reset temporary currency if restarting after failure
+            currency.resetTemporary();
           }
           resetPlayer();
           resetScore();
@@ -1295,7 +1332,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key.toLowerCase() === 'm') {
     toggleMute();
   }
-  // Add S key for shop
+  // Add S key for shop (only if not in win/loss state)
   if (e.key.toLowerCase() === 's' && !gameWon && !gameLost) {
     toggleShop();
   }
@@ -1432,8 +1469,18 @@ function createShopUI() {
   currencyDisplay.style.cssText = 'text-align: center; margin-bottom: 20px; font-size: 20px;';
   currencyDisplay.innerHTML = `💰 Coins: ${currency.coins} | 💎 Gems: ${currency.gems}`;
   
-  shopContainer.appendChild(title);
-  shopContainer.appendChild(currencyDisplay);
+  // Show temporary currency if any
+  if (currency.tempCoins > 0 || currency.tempGems > 0) {
+    const tempDisplay = document.createElement('div');
+    tempDisplay.style.cssText = 'text-align: center; margin-bottom: 10px; font-size: 14px; color: #ff9800; font-style: italic;';
+    tempDisplay.innerHTML = `(Pending: +${currency.tempCoins} coins, +${currency.tempGems} gems - Complete level to keep!)`;
+    shopContainer.appendChild(title);
+    shopContainer.appendChild(currencyDisplay);
+    shopContainer.appendChild(tempDisplay);
+  } else {
+    shopContainer.appendChild(title);
+    shopContainer.appendChild(currencyDisplay);
+  }
   
   // Skin selector section
   const skinSection = document.createElement('div');
@@ -1559,6 +1606,15 @@ function createShopUI() {
         }
         alert(message);
         currencyDisplay.innerHTML = `💰 Coins: ${currency.coins} | 💎 Gems: ${currency.gems}`;
+        // Update temporary currency display if it exists
+        const tempDisplay = shopContainer.querySelector('div[style*="color: #ff9800"]');
+        if (tempDisplay) {
+          if (currency.tempCoins > 0 || currency.tempGems > 0) {
+            tempDisplay.innerHTML = `(Pending: +${currency.tempCoins} coins, +${currency.tempGems} gems - Complete level to keep!)`;
+          } else {
+            tempDisplay.remove();
+          }
+        }
       } else {
         alert(result.message);
       }
