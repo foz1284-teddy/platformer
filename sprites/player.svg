@@ -13,6 +13,6 @@
   <line x1="10" y1="20" x2="5" y2="25" stroke="#4169E1" stroke-width="2"/>
   <line x1="20" y1="20" x2="25" y2="25" stroke="#4169E1" stroke-width="2"/>
   <!-- Legs -->
-  <line x1="12" y1="30" x2="12" y2="28" stroke="#4169E1" stroke-width="2"/>
-  <line x1="18" y1="30" x2="18" y2="28" stroke="#4169E1" stroke-width="2"/>
+  <line x1="12" y1="30" x2="12" y2="22" stroke="#4169E1" stroke-width="2"/>
+  <line x1="18" y1="30" x2="18" y2="22" stroke="#4169E1" stroke-width="2"/>
 </svg> 
