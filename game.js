@@ -1806,6 +1806,10 @@ function toggleShop() {
 }
 
 function createShopUI() {
+  // Reload unlocked skins and current skin from localStorage when opening shop
+  loadUnlockedSkins();
+  player.skinId = localStorage.getItem('currentSkin') || 'default';
+  
   const overlay = document.createElement('div');
   overlay.id = 'shopOverlay';
   overlay.style.cssText = `
@@ -1938,8 +1942,19 @@ function createShopUI() {
         if (!selectButton.disabled) {
           player.skinId = skinId;
           localStorage.setItem('currentSkin', skinId);
+          // Refresh shop UI to show updated selection
           toggleShop();
-          toggleShop(); // Reopen to refresh
+          toggleShop();
+        }
+      });
+      selectButton.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        if (!selectButton.disabled) {
+          player.skinId = skinId;
+          localStorage.setItem('currentSkin', skinId);
+          // Refresh shop UI to show updated selection
+          toggleShop();
+          toggleShop();
         }
       });
     } else {
