@@ -447,6 +447,45 @@ let keys = {};
 let gameWon = false;
 let gameLost = false;
 
+// Currency system (persists across levels)
+const currency = {
+  coins: parseInt(localStorage.getItem('coins')) || 0,
+  gems: parseInt(localStorage.getItem('gems')) || 0,
+  
+  addCoins(amount) {
+    this.coins += amount;
+    this.save();
+  },
+  
+  addGems(amount) {
+    this.gems += amount;
+    this.save();
+  },
+  
+  spendCoins(amount) {
+    if (this.coins >= amount) {
+      this.coins -= amount;
+      this.save();
+      return true;
+    }
+    return false;
+  },
+  
+  spendGems(amount) {
+    if (this.gems >= amount) {
+      this.gems -= amount;
+      this.save();
+      return true;
+    }
+    return false;
+  },
+  
+  save() {
+    localStorage.setItem('coins', this.coins);
+    localStorage.setItem('gems', this.gems);
+  }
+};
+
 // Scoring system
 const score = {
   points: 0,
@@ -498,9 +537,10 @@ function drawScore() {
   ctx.fillText(`Score: ${Math.floor(score.points)}`, 20, 30);
   ctx.fillText(`High Score: ${Math.floor(score.highScore)}`, 20, 60);
   ctx.fillText(`Combo: ${score.combo}x`, 20, 90);
-  ctx.fillText(`Items: ${player.collectedItems.length}`, 20, 120);
+  ctx.fillText(`Coins: ${currency.coins}`, 20, 120);
+  ctx.fillText(`Gems: ${currency.gems}`, 20, 150);
   if (player.hasKey) {
-    ctx.fillText('Key: Yes', 20, 150);
+    ctx.fillText('Key: Yes', 20, 180);
   }
 }
 
@@ -549,6 +589,60 @@ function resetScore() {
   score.combo = 0;
 }
 
+// Character skins system
+const characterSkins = {
+  default: {
+    name: 'Default',
+    unlocked: true,
+    sprite: 'player'
+  },
+  red: {
+    name: 'Red Hero',
+    unlocked: false,
+    sprite: 'player_red'
+  },
+  green: {
+    name: 'Green Hero',
+    unlocked: false,
+    sprite: 'player_green'
+  },
+  gold: {
+    name: 'Gold Hero',
+    unlocked: false,
+    sprite: 'player_gold'
+  },
+  purple: {
+    name: 'Purple Hero',
+    unlocked: false,
+    sprite: 'player_purple'
+  }
+};
+
+// Load unlocked skins from localStorage
+function loadUnlockedSkins() {
+  const saved = JSON.parse(localStorage.getItem('unlockedSkins')) || {};
+  Object.keys(characterSkins).forEach(skinId => {
+    if (saved[skinId] !== undefined) {
+      characterSkins[skinId].unlocked = saved[skinId];
+    }
+  });
+}
+
+// Save unlocked skins to localStorage
+function saveUnlockedSkins() {
+  const toSave = {};
+  Object.keys(characterSkins).forEach(skinId => {
+    toSave[skinId] = characterSkins[skinId].unlocked;
+  });
+  localStorage.setItem('unlockedSkins', JSON.stringify(toSave));
+}
+
+// Get current player skin
+function getCurrentSkin() {
+  const skinId = localStorage.getItem('currentSkin') || 'default';
+  return characterSkins[skinId] || characterSkins.default;
+}
+
 // Update player object to include health
 const player = {
   x: 50,
@@ -565,7 +659,8 @@ const player = {
   health: 100,
   invulnerable: false,
   hasKey: false,
-  collectedItems: []
+  collectedItems: [],
+  skinId: 'default'
 };
 
 // Add collection sound
@@ -635,6 +730,12 @@ function setupRestartButton() {
 
 // Update the game loop to show/hide restart button
 function gameLoop() {
+  // Pause game loop if shop is open
+  if (shopOpen) {
+    requestAnimationFrame(gameLoop);
+    return;
+  }
+  
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   cameraX = player.x - canvas.width / 2;
   if (cameraX < 0) cameraX = 0;
@@ -1075,12 +1176,33 @@ function setupPlayButton() {
   });
 }
 
+// Setup shop button
+function setupShopButton() {
+  const shopButton = document.getElementById('shopButton');
+  if (shopButton) {
+    shopButton.addEventListener('click', () => {
+      if (!gameWon && !gameLost) {
+        toggleShop();
+      }
+    });
+  }
+}
+
 // Call setupTouchControls and setupKeyboardControls when the game starts
 function startGame() {
   setupTouchControls();
   setupKeyboardControls();
   setupRestartButton();
   setupPlayButton();
+  setupShopButton();
+  // Initialize skins system
+  loadUnlockedSkins();
+  player.skinId = localStorage.getItem('currentSkin') || 'default';
+  // Show shop button when game starts
+  const shopButton = document.getElementById('shopButton');
+  if (shopButton) {
+    shopButton.style.display = 'block';
+  }
   // Draw initial game state
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = '#88cc88';
@@ -1173,7 +1295,302 @@ document.addEventListener('keydown', (e) => {
   if (e.key.toLowerCase() === 'm') {
     toggleMute();
   }
+  // Add S key for shop
+  if (e.key.toLowerCase() === 's' && !gameWon && !gameLost) {
+    toggleShop();
+  }
 });
+
+// Shop system with chests
+const shop = {
+  chests: [
+    {
+      id: 'common',
+      name: 'Common Chest',
+      costCoins: 50,
+      costGems: 0,
+      rewards: {
+        coins: [5, 15],
+        gems: [0, 2],
+        skins: []
+      }
+    },
+    {
+      id: 'rare',
+      name: 'Rare Chest',
+      costCoins: 0,
+      costGems: 5,
+      rewards: {
+        coins: [10, 30],
+        gems: [1, 5],
+        skins: ['red', 'green']
+      }
+    },
+    {
+      id: 'epic',
+      name: 'Epic Chest',
+      costCoins: 200,
+      costGems: 10,
+      rewards: {
+        coins: [50, 100],
+        gems: [5, 15],
+        skins: ['gold', 'purple']
+      }
+    }
+  ],
+  
+  openChest(chestId) {
+    const chest = this.chests.find(c => c.id === chestId);
+    if (!chest) return null;
+    
+    // Check if player can afford
+    if (chest.costCoins > 0 && !currency.spendCoins(chest.costCoins)) {
+      return { success: false, message: 'Not enough coins!' };
+    }
+    if (chest.costGems > 0 && !currency.spendGems(chest.costGems)) {
+      return { success: false, message: 'Not enough gems!' };
+    }
+    
+    // Generate rewards
+    const rewards = {
+      coins: Math.floor(Math.random() * (chest.rewards.coins[1] - chest.rewards.coins[0] + 1)) + chest.rewards.coins[0],
+      gems: Math.floor(Math.random() * (chest.rewards.gems[1] - chest.rewards.gems[0] + 1)) + chest.rewards.gems[0],
+      skin: null
+    };
+    
+    // Chance for skin reward
+    if (chest.rewards.skins.length > 0 && Math.random() < 0.3) {
+      const availableSkins = chest.rewards.skins.filter(skinId => !characterSkins[skinId].unlocked);
+      if (availableSkins.length > 0) {
+        const randomSkin = availableSkins[Math.floor(Math.random() * availableSkins.length)];
+        characterSkins[randomSkin].unlocked = true;
+        rewards.skin = randomSkin;
+        saveUnlockedSkins();
+      }
+    }
+    
+    // Add rewards
+    currency.addCoins(rewards.coins);
+    currency.addGems(rewards.gems);
+    
+    return { success: true, rewards };
+  }
+};
+
+// Shop UI
+let shopOpen = false;
+
+function toggleShop() {
+  shopOpen = !shopOpen;
+  const shopOverlay = document.getElementById('shopOverlay');
+  if (shopOverlay) {
+    if (shopOpen) {
+      // Remove old overlay and create fresh one to refresh currency display
+      shopOverlay.remove();
+      createShopUI();
+    } else {
+      shopOverlay.style.display = 'none';
+    }
+  } else if (shopOpen) {
+    createShopUI();
+  }
+}
+
+function createShopUI() {
+  const overlay = document.createElement('div');
+  overlay.id = 'shopOverlay';
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    flex-direction: column;
+  `;
+  
+  const shopContainer = document.createElement('div');
+  shopContainer.style.cssText = `
+    background-color: white;
+    padding: 30px;
+    border-radius: 15px;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  `;
+  
+  const title = document.createElement('h2');
+  title.textContent = 'Shop';
+  title.style.cssText = 'text-align: center; margin-bottom: 20px; font-size: 32px;';
+  
+  const currencyDisplay = document.createElement('div');
+  currencyDisplay.style.cssText = 'text-align: center; margin-bottom: 20px; font-size: 20px;';
+  currencyDisplay.innerHTML = `💰 Coins: ${currency.coins} | 💎 Gems: ${currency.gems}`;
+  
+  shopContainer.appendChild(title);
+  shopContainer.appendChild(currencyDisplay);
+  
+  // Skin selector section
+  const skinSection = document.createElement('div');
+  skinSection.style.cssText = 'margin-bottom: 30px; padding: 15px; background-color: #e8f5e9; border-radius: 10px;';
+  const skinTitle = document.createElement('h3');
+  skinTitle.textContent = 'Character Skins';
+  skinTitle.style.cssText = 'margin: 0 0 15px 0;';
+  skinSection.appendChild(skinTitle);
+  
+  Object.keys(characterSkins).forEach(skinId => {
+    const skin = characterSkins[skinId];
+    const skinDiv = document.createElement('div');
+    skinDiv.style.cssText = `
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      margin: 5px 0;
+      background-color: ${skin.unlocked ? '#c8e6c9' : '#ffcdd2'};
+      border-radius: 5px;
+      border: 2px solid ${player.skinId === skinId ? '#4CAF50' : '#ccc'};
+    `;
+    
+    const skinName = document.createElement('span');
+    skinName.textContent = `${skin.name} ${skin.unlocked ? '✓' : '(Locked)'}`;
+    skinName.style.cssText = 'font-weight: bold;';
+    
+    const selectButton = document.createElement('button');
+    if (skin.unlocked) {
+      selectButton.textContent = player.skinId === skinId ? 'Selected' : 'Select';
+      selectButton.disabled = player.skinId === skinId;
+      selectButton.style.cssText = `
+        padding: 5px 15px;
+        background-color: ${player.skinId === skinId ? '#81c784' : '#4CAF50'};
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: ${player.skinId === skinId ? 'default' : 'pointer'};
+      `;
+      selectButton.addEventListener('click', () => {
+        if (!selectButton.disabled) {
+          player.skinId = skinId;
+          localStorage.setItem('currentSkin', skinId);
+          toggleShop();
+          toggleShop(); // Reopen to refresh
+        }
+      });
+    } else {
+      selectButton.textContent = 'Locked';
+      selectButton.disabled = true;
+      selectButton.style.cssText = `
+        padding: 5px 15px;
+        background-color: #ccc;
+        color: #666;
+        border: none;
+        border-radius: 5px;
+        cursor: not-allowed;
+      `;
+    }
+    
+    skinDiv.appendChild(skinName);
+    skinDiv.appendChild(selectButton);
+    skinSection.appendChild(skinDiv);
+  });
+  
+  shopContainer.appendChild(skinSection);
+  
+  // Chest section title
+  const chestTitle = document.createElement('h3');
+  chestTitle.textContent = 'Chests';
+  chestTitle.style.cssText = 'margin: 20px 0 10px 0;';
+  shopContainer.appendChild(chestTitle);
+  
+  // Create chest buttons
+  shop.chests.forEach(chest => {
+    const chestDiv = document.createElement('div');
+    chestDiv.style.cssText = `
+      border: 2px solid #333;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 10px 0;
+      background-color: #f5f5f5;
+    `;
+    
+    const chestName = document.createElement('h3');
+    chestName.textContent = chest.name;
+    chestName.style.cssText = 'margin: 0 0 10px 0;';
+    
+    const chestCost = document.createElement('p');
+    let costText = '';
+    if (chest.costCoins > 0) costText += `💰 ${chest.costCoins} coins`;
+    if (chest.costGems > 0) {
+      if (costText) costText += ' + ';
+      costText += `💎 ${chest.costGems} gems`;
+    }
+    chestCost.textContent = `Cost: ${costText}`;
+    chestCost.style.cssText = 'margin: 5px 0;';
+    
+    const chestRewards = document.createElement('p');
+    chestRewards.textContent = `Rewards: Coins (${chest.rewards.coins[0]}-${chest.rewards.coins[1]}), Gems (${chest.rewards.gems[0]}-${chest.rewards.gems[1]}), ${chest.rewards.skins.length > 0 ? 'Possible Skin!' : 'No skins'}`;
+    chestRewards.style.cssText = 'margin: 5px 0; font-size: 14px; color: #666;';
+    
+    const buyButton = document.createElement('button');
+    buyButton.textContent = 'Open Chest';
+    buyButton.style.cssText = `
+      width: 100%;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    `;
+    
+    buyButton.addEventListener('click', () => {
+      const result = shop.openChest(chest.id);
+      if (result.success) {
+        let message = `You got: ${result.rewards.coins} coins, ${result.rewards.gems} gems`;
+        if (result.rewards.skin) {
+          message += `, and unlocked the ${characterSkins[result.rewards.skin].name} skin!`;
+        }
+        alert(message);
+        currencyDisplay.innerHTML = `💰 Coins: ${currency.coins} | 💎 Gems: ${currency.gems}`;
+      } else {
+        alert(result.message);
+      }
+    });
+    
+    chestDiv.appendChild(chestName);
+    chestDiv.appendChild(chestCost);
+    chestDiv.appendChild(chestRewards);
+    chestDiv.appendChild(buyButton);
+    shopContainer.appendChild(chestDiv);
+  });
+  
+  // Close button
+  const closeButton = document.createElement('button');
+  closeButton.textContent = 'Close Shop (Press S)';
+  closeButton.style.cssText = `
+    width: 100%;
+    padding: 10px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 20px;
+  `;
+  closeButton.addEventListener('click', () => toggleShop());
+  shopContainer.appendChild(closeButton);
+  
+  overlay.appendChild(shopContainer);
+  document.body.appendChild(overlay);
+}
 
 // Add collection mechanics
 function handleCollectible(collectible) {
@@ -1182,6 +1599,13 @@ function handleCollectible(collectible) {
     collectible.collected = true;
     updateScore('collectible', SCORE_VALUES[collectible.type]);
     collectSound.play().catch(error => console.error('Collect sound failed to play:', error));
+    
+    // Add currency
+    if (collectible.type === 'COIN') {
+      currency.addCoins(1);
+    } else if (collectible.type === 'GEM') {
+      currency.addGems(1);
+    }
     
     if (collectibleType.unlocksSecret) {
       player.hasKey = true;

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
   <!-- Body -->
-  <rect x="10" y="15" width="10" height="15" fill="#4169E1" stroke="#000080" stroke-width="1"/>
+  <rect x="10" y="15" width="10" height="8" fill="#4169E1" stroke="#000080" stroke-width="1"/>
   <!-- Head -->
   <circle cx="15" cy="10" r="8" fill="#4169E1" stroke="#000080" stroke-width="1"/>
   <!-- Eyes -->
@@ -13,6 +13,6 @@
   <line x1="10" y1="20" x2="5" y2="25" stroke="#4169E1" stroke-width="2"/>
   <line x1="20" y1="20" x2="25" y2="25" stroke="#4169E1" stroke-width="2"/>
   <!-- Legs -->
-  <line x1="12" y1="30" x2="12" y2="22" stroke="#4169E1" stroke-width="2"/>
-  <line x1="18" y1="30" x2="18" y2="22" stroke="#4169E1" stroke-width="2"/>
+  <line x1="12" y1="23" x2="12" y2="30" stroke="#4169E1" stroke-width="3"/>
+  <line x1="18" y1="23" x2="18" y2="30" stroke="#4169E1" stroke-width="3"/>
 </svg> 
