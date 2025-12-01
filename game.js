@@ -1905,6 +1905,17 @@ const shop = {
         gems: [50, 150],
         skins: ['black', 'silver', 'rainbow', 'gold', 'purple']
       }
+    },
+    {
+      id: 'legendary',
+      name: 'Legendary Chest',
+      costCoins: 2000,
+      costGems: 100,
+      rewards: {
+        coins: [1000, 2000],
+        gems: [100, 300],
+        skins: ['black', 'silver', 'rainbow', 'gold', 'purple']
+      }
     }
   ],
   
