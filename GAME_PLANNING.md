@@ -1,6 +1,6 @@
 # Platformer Game Development Plansdfsdfsdfsd
 
-show level name when level starts
+
 fix level looping at end and show ending screen
 save player name in scoreboard
 add more sinking sand
