@@ -1216,12 +1216,34 @@ function gameLoop() {
       console.log('Bouncing platforms found:', bouncingPlatforms.length, bouncingPlatforms);
     }
 
+    // Check if player is in sand BEFORE ground collision
+    let playerInSand = false;
+    if (currentLevelData && currentLevelData.hazards) {
+      currentLevelData.hazards.forEach(hazard => {
+        if (hazard.type === 'SAND') {
+          if (player.x < hazard.x + hazard.width &&
+              player.x + player.width > hazard.x &&
+              player.y < hazard.y + hazard.height &&
+              player.y + player.height > hazard.y) {
+            playerInSand = true;
+          }
+        }
+      });
+    }
+
     // Apply gravity
     player.velocityY += player.gravity;
     player.y += player.velocityY;
 
-    // Ground collision
-    if (player.y + player.height >= 380) {
+    // If in sand, force sinking by directly moving player down
+    if (playerInSand) {
+      player.y += 0.5; // Force sink down
+      player.grounded = false; // Prevent grounding while in sand
+      player.speed = 0.8; // Slow down movement
+    }
+
+    // Ground collision (skip if in sand to allow sinking)
+    if (!playerInSand && player.y + player.height >= 380) {
       player.y = 380 - player.height;
       player.velocityY = 0;
       player.grounded = true;
@@ -1418,10 +1440,14 @@ function gameLoop() {
               ctx.fillStyle = 'rgba(210, 180, 140, 0.3)';
             }
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-          } else if (hazard.type === 'SAND') {
-            // Even if invulnerable, still slow down in sand
+          }
+          
+          // Sand always applies sinking effect, even when invulnerable
+          if (hazard.type === 'SAND') {
+            // Continuous sinking effect
             player.velocityY += player.gravity * 1.5;
             player.speed = 0.8;
+            player.grounded = false; // Prevent grounding while in sand
           }
         }
       });

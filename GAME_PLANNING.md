@@ -1,5 +1,13 @@
 # Platformer Game Development Plansdfsdfsdfsd
 
+show level name when level starts
+fix level looping at end and show ending screen
+save player name in scoreboard
+add more sinking sand
+track nuber of times game has been played
+when health bar is emty the player needs to die
+
+
 ## bugs
 - [x] tablet controls
 - [x ] tablet restart button
