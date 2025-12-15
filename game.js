@@ -184,6 +184,59 @@ const COLLECTIBLE_TYPES = {
   }
 };
 
+// Zone themes
+const ZONE_THEMES = {
+  FOREST: {
+    name: 'Forest Zone',
+    backgroundColor: '#7CB342',
+    skyColor: '#81D4FA',
+    groundColor: '#4a7c59',
+    primaryHazard: 'WATER',
+    description: 'Lush green forests with flowing streams'
+  },
+  DESERT: {
+    name: 'Desert Zone',
+    backgroundColor: '#FFB74D',
+    skyColor: '#FFD54F',
+    groundColor: '#CD853F',
+    primaryHazard: 'SAND',
+    description: 'Hot sandy deserts with quicksand pits'
+  },
+  VOLCANO: {
+    name: 'Volcano Zone',
+    backgroundColor: '#E53935',
+    skyColor: '#FF6F00',
+    groundColor: '#8B4513',
+    primaryHazard: 'LAVA',
+    description: 'Fiery volcanic terrain with molten lava'
+  },
+  OCEAN: {
+    name: 'Ocean Zone',
+    backgroundColor: '#1976D2',
+    skyColor: '#64B5F6',
+    groundColor: '#2E4A5F',
+    primaryHazard: 'WATER',
+    description: 'Deep blue oceans with treacherous waters'
+  },
+  VOID: {
+    name: 'Void Zone',
+    backgroundColor: '#1A1A1A',
+    skyColor: '#424242',
+    groundColor: '#212121',
+    primaryHazard: 'MIXED',
+    description: 'Dark void realm with all dangers'
+  }
+};
+
+// Get zone theme for a level
+function getZoneTheme(levelIndex) {
+  if (levelIndex < 2) return ZONE_THEMES.FOREST;      // Levels 0-1
+  if (levelIndex < 4) return ZONE_THEMES.DESERT;     // Levels 2-3
+  if (levelIndex < 6) return ZONE_THEMES.VOLCANO;   // Levels 4-5
+  if (levelIndex < 8) return ZONE_THEMES.OCEAN;      // Levels 6-7
+  return ZONE_THEMES.VOID;                           // Levels 8-9
+}
+
 // Update levels to include hazards, collectibles, zombies, and platforms
 const levels = [
   {
@@ -1199,6 +1252,10 @@ let keys = {};
 let gameWon = false;
 let gameLost = false;
 
+// Zone notification system
+let zoneNotificationTimer = 0;
+let lastZoneIndex = -1;
+
 // Currency system (persists across levels)
 const currency = {
   coins: parseInt(localStorage.getItem('coins')) || 0,
@@ -1330,6 +1387,39 @@ const highScores = {
 
 // Update score display
 function drawScore() {
+  const zoneTheme = getZoneTheme(currentLevel);
+  
+  // Draw zone name in top right
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+  ctx.fillRect(canvas.width - 250, 10, 240, 50);
+  ctx.fillStyle = 'white';
+  ctx.font = 'bold 18px Arial';
+  ctx.textAlign = 'right';
+  ctx.fillText(zoneTheme.name, canvas.width - 10, 35);
+  ctx.font = '14px Arial';
+  ctx.fillText(`Level ${currentLevel + 1}`, canvas.width - 10, 55);
+  
+  // Show zone notification when entering new zone
+  const currentZoneIndex = Math.floor(currentLevel / 2);
+  if (currentZoneIndex !== lastZoneIndex && zoneNotificationTimer <= 0) {
+    zoneNotificationTimer = 180; // Show for 3 seconds at 60fps
+    lastZoneIndex = currentZoneIndex;
+  }
+  
+  if (zoneNotificationTimer > 0) {
+    const alpha = Math.min(1, zoneNotificationTimer / 60);
+    ctx.fillStyle = `rgba(0, 0, 0, ${0.8 * alpha})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+    ctx.font = 'bold 36px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(zoneTheme.name, canvas.width / 2, canvas.height / 2 - 20);
+    ctx.font = '20px Arial';
+    ctx.fillText(zoneTheme.description, canvas.width / 2, canvas.height / 2 + 20);
+    zoneNotificationTimer--;
+  }
+  
+  // Draw regular score info
   ctx.fillStyle = 'black';
   ctx.font = '20px Arial';
   ctx.textAlign = 'left';
@@ -1575,6 +1665,9 @@ function setupRestartButton() {
     resetScore();
     gameWon = false;
     gameLost = false;
+    // Reset zone notification for new level
+    lastZoneIndex = -1;
+    zoneNotificationTimer = 0;
     restartButton.style.display = 'none';
     playBackgroundMusic();
     requestAnimationFrame(gameLoop);
@@ -1590,6 +1683,16 @@ function gameLoop() {
   }
   
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // Draw background based on zone theme
+  const zoneTheme = getZoneTheme(currentLevel);
+  // Draw sky gradient
+  const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  skyGradient.addColorStop(0, zoneTheme.skyColor);
+  skyGradient.addColorStop(1, zoneTheme.backgroundColor);
+  ctx.fillStyle = skyGradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
   cameraX = player.x - canvas.width / 2;
   if (cameraX < 0) cameraX = 0;
   
@@ -2063,6 +2166,9 @@ function setupKeyboardControls() {
           resetScore();
           gameWon = false;
           gameLost = false;
+          // Reset zone notification for new level
+          lastZoneIndex = -1;
+          zoneNotificationTimer = 0;
           restartButton.style.display = 'none';
           playBackgroundMusic();
           requestAnimationFrame(gameLoop);
@@ -2119,7 +2225,12 @@ function startGame() {
   }
   // Draw initial game state
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#88cc88';
+  // Draw background based on zone theme
+  const zoneTheme = getZoneTheme(currentLevel);
+  const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  skyGradient.addColorStop(0, zoneTheme.skyColor);
+  skyGradient.addColorStop(1, zoneTheme.backgroundColor);
+  ctx.fillStyle = skyGradient;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   // Draw ground
   ctx.drawImage(sprites.ground, 0, 380, 3000, 20);
