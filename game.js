@@ -1310,10 +1310,30 @@ const levels = [
   }
 ];
 
+// Parse URL parameter for level selection (developer feature)
+function getUrlParameter(name) {
+  const urlParams = new URLSearchParams(window.location.search);
+  const value = urlParams.get(name);
+  return value !== null ? value : null;
+}
+
 let currentLevel = 0;
+
+// Developer feature: Allow level selection via URL parameter (e.g., ?level=5)
+const levelParam = getUrlParameter('level');
+if (levelParam !== null) {
+  const requestedLevel = parseInt(levelParam, 10);
+  if (!isNaN(requestedLevel) && requestedLevel >= 0 && requestedLevel < levels.length) {
+    currentLevel = requestedLevel;
+    console.log(`Starting at level ${currentLevel + 1} (developer mode)`);
+  } else {
+    console.warn(`Invalid level parameter: ${levelParam}. Must be 0-${levels.length - 1}`);
+  }
+}
 let keys = {};
 let gameWon = false;
 let gameLost = false;
+let gameCompleted = false;
 
 // Zone notification system
 let zoneNotificationTimer = 0;
@@ -1704,15 +1724,82 @@ function drawHighScoreTable() {
   });
 }
 
+// Draw ending screen when all levels are completed
+function drawEndingScreen() {
+  // Draw semi-transparent overlay
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // Draw ending message at the top
+  ctx.fillStyle = '#FFD700';
+  ctx.font = 'bold 42px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('🎉 CONGRATULATIONS! 🎉', canvas.width / 2, 80);
+  
+  ctx.fillStyle = 'white';
+  ctx.font = '28px Arial';
+  ctx.fillText('You Completed All Levels!', canvas.width / 2, 120);
+  
+  // Draw stats summary (positioned above high score table)
+  ctx.font = '20px Arial';
+  ctx.fillText(`Final Score: ${Math.floor(score.points)}`, canvas.width / 2, 155);
+  ctx.fillText(`Max Combo: ${score.maxCombo}x`, canvas.width / 2, 180);
+  ctx.fillText(`Total Coins: ${currency.getTotalCoins()} | Total Gems: ${currency.getTotalGems()}`, canvas.width / 2, 205);
+  
+  // Show high score table (positioned lower to avoid overlap)
+  const scores = highScores.getTopScores();
+  const startX = canvas.width / 2 - 200;
+  const startY = 240;
+  const rowHeight = 30;
+  
+  // Draw table background
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+  ctx.fillRect(startX - 10, startY - 40, 420, (scores.length + 1) * rowHeight + 50);
+  
+  // Draw table header
+  ctx.fillStyle = 'black';
+  ctx.font = 'bold 22px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('High Scores', canvas.width / 2, startY);
+  
+  // Draw column headers
+  ctx.font = 'bold 16px Arial';
+  ctx.fillText('Rank', startX + 30, startY + 30);
+  ctx.fillText('Score', startX + 120, startY + 30);
+  ctx.fillText('Level', startX + 220, startY + 30);
+  ctx.fillText('Date', startX + 320, startY + 30);
+  
+  // Draw scores
+  ctx.font = '14px Arial';
+  scores.forEach((entry, index) => {
+    const y = startY + 60 + (index * rowHeight);
+    ctx.textAlign = 'center';
+    ctx.fillText(`${index + 1}`, startX + 30, y);
+    ctx.fillText(`${Math.floor(entry.score)}`, startX + 120, y);
+    ctx.fillText(`Level ${entry.level + 1}`, startX + 220, y);
+    ctx.fillText(entry.date, startX + 320, y);
+  });
+  
+  // Show restart button with "Play Again" text
+  document.getElementById('restartButton').style.display = 'block';
+  document.getElementById('restartButton').textContent = 'Play Again';
+}
+
 // Add restart button handling
 function setupRestartButton() {
   const restartButton = document.getElementById('restartButton');
   
   restartButton.addEventListener('click', () => {
     if (gameWon) {
-      currentLevel++;
-      if (currentLevel >= levels.length) {
-        currentLevel = 0; // Loop back to first level
+      if (gameCompleted) {
+        // Reset to first level when game is completed
+        currentLevel = 0;
+        gameCompleted = false;
+      } else {
+        currentLevel++;
+        if (currentLevel >= levels.length) {
+          currentLevel = 0; // Loop back to first level (shouldn't happen, but safety check)
+        }
       }
       // Reload currency from localStorage when starting new level
       currency.reload();
@@ -2121,6 +2208,12 @@ function gameLoop() {
       updateScore('levelComplete');
       // Save temporary currency to permanent currency on level completion
       currency.saveTemporary();
+      // Check if this was the last level
+      if (currentLevel === levels.length - 1) {
+        gameCompleted = true;
+        // Add final score to high scores
+        highScores.addScore(score.points, currentLevel);
+      }
       const winSound = new Audio('audio/win.wav');
       winSound.volume = 0.7; // Increased from 0.3 to 0.7 for louder win sound
       winSound.play().catch(error => console.error('Win sound failed to play:', error));
@@ -2131,22 +2224,28 @@ function gameLoop() {
   drawScore();
 
   if (gameWon) {
-    ctx.fillStyle = 'black';
-    ctx.font = '36px sans-serif';
-    ctx.fillText('Level Complete! Press Enter.', 150, 200);
-    ctx.font = '24px sans-serif';
-    ctx.fillText(`Final Score: ${Math.floor(score.points)}`, 150, 240);
-    ctx.fillText(`Max Combo: ${score.maxCombo}x`, 150, 280);
-    
-    // Add score to high scores
-    highScores.addScore(score.points, currentLevel);
-    
-    // Show high score table
-    drawHighScoreTable();
-    
-    // Show restart button
-    document.getElementById('restartButton').style.display = 'block';
-    document.getElementById('restartButton').textContent = 'Next Level';
+    if (gameCompleted) {
+      // Show ending screen when all levels are completed
+      drawEndingScreen();
+    } else {
+      // Show regular level complete screen
+      ctx.fillStyle = 'black';
+      ctx.font = '36px sans-serif';
+      ctx.fillText('Level Complete! Press Enter.', 150, 200);
+      ctx.font = '24px sans-serif';
+      ctx.fillText(`Final Score: ${Math.floor(score.points)}`, 150, 240);
+      ctx.fillText(`Max Combo: ${score.maxCombo}x`, 150, 280);
+      
+      // Add score to high scores
+      highScores.addScore(score.points, currentLevel);
+      
+      // Show high score table
+      drawHighScoreTable();
+      
+      // Show restart button
+      document.getElementById('restartButton').style.display = 'block';
+      document.getElementById('restartButton').textContent = 'Next Level';
+    }
   } else if (gameLost) {
     ctx.fillStyle = 'black';
     ctx.font = '36px sans-serif';
@@ -2221,9 +2320,15 @@ function setupKeyboardControls() {
         const restartButton = document.getElementById('restartButton');
         if (restartButton) {
           if (gameWon) {
-            currentLevel++;
-            if (currentLevel >= levels.length) {
-              currentLevel = 0; // Loop back to first level
+            if (gameCompleted) {
+              // Reset to first level when game is completed
+              currentLevel = 0;
+              gameCompleted = false;
+            } else {
+              currentLevel++;
+              if (currentLevel >= levels.length) {
+                currentLevel = 0; // Loop back to first level (shouldn't happen, but safety check)
+              }
             }
             // Reload currency from localStorage when starting new level
             currency.reload();
