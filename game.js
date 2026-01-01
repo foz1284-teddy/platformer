@@ -2044,6 +2044,16 @@ function gameLoop() {
       });
     }
 
+    // Check if player health is depleted
+    if (player.health <= 0) {
+      gameLost = true;
+      stopBackgroundMusic();
+      currency.resetTemporary();
+      const loseSound = new Audio('audio/lose.wav');
+      loseSound.volume = 0.7;
+      loseSound.play().catch(error => console.error('Lose sound failed to play:', error));
+    }
+
   // Draw player
   const currentSkin = getCurrentSkin();
   const playerSprite = sprites[currentSkin.sprite] || sprites.player;
@@ -2060,7 +2070,7 @@ function gameLoop() {
   // Draw health bar
   const healthBarWidth = 50;
   const healthBarHeight = 5;
-  const healthPercentage = player.health / 100;
+  const healthPercentage = Math.max(0, Math.min(1, player.health / 100));
   ctx.fillStyle = '#e74c3c';
   ctx.fillRect(player.x - cameraX, player.y - 10, healthBarWidth, healthBarHeight);
   ctx.fillStyle = '#2ecc71';
